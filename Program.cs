@@ -81,7 +81,8 @@ namespace FDSec
                             if (File.Exists(args[0]))
                             {
                                 string malwarehash = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(args[0]))).Replace("-", String.Empty).ToLower();
-                                if (Array.IndexOf(blackhashes, malwarehash) > -1)
+                                //if (Array.IndexOf(blackhashes, malwarehash) > -1)
+                                if(blackhashes.Contains(malwarehash))
                                 {
                                     File.Delete(args[0]);
                                 }
@@ -130,6 +131,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
