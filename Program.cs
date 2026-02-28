@@ -41,8 +41,8 @@ namespace FDSec
         {
             foreach(string signature in signatures)
             {
-                string hexsign = "^" + signature.Replace("(", "(?:(?=.*").Replace(" AND ", ")(?=.*").Replace(" OR ", "|");
-                if(Regex.IsMatch(malwarebuffer, hexsign, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.Compiled))
+                string hexsign = "^" + signature.Replace("(", "(?:(?=.*").Replace(" AND ", ")(?=.*").Replace(" OR ", "|").Replace("\\x", String.Empty).Replace(" ", String.Empty);
+                if(Regex.IsMatch(malwarebuffer, hexsign, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase))
                 {
                     return true;
                 }
@@ -113,5 +113,6 @@ namespace FDSec
         }
     }
 }
+
 
 
