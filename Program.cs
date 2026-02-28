@@ -78,13 +78,23 @@ namespace FDSec
                     {
                         try
                         {
+                            ProcessStartInfo startInfo;
                             if (File.Exists(args[0]))
                             {
                                 string malwarehash = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(args[0]))).Replace("-", String.Empty).ToLower();
                                 //if (Array.IndexOf(blackhashes, malwarehash) > -1)
                                 if(blackhashes.Contains(malwarehash))
                                 {
-                                    File.Delete(args[0]);
+                                    //File.Delete(args[0]);
+                                    startInfo = new ProcessStartInfo
+                                    {
+                                        FileName = "cmd.exe",
+                                        Arguments = "/c tar -acf quarantine.zip " + args[0] + " && del " + args[0],
+                                        CreateNoWindow = true,
+                                        UseShellExecute = false,
+                                        WindowStyle = ProcessWindowStyle.Hidden
+                                    };
+                                    Process.Start(startInfo);
                                 }
                             }
                         }
@@ -108,7 +118,7 @@ namespace FDSec
                                             //if (Array.IndexOf(blackhashes, malwarehash) > -1 || await CheckSignature(signatures, malwarehex))
                                             if(blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarehex))
                                             {
-                                                ProcessStartInfo startInfo = new ProcessStartInfo
+                                                startInfo = new ProcessStartInfo
                                                 {
                                                     FileName = "cmd.exe",
                                                     Arguments = "/c taskkill /F /T /PID " + proc.Id.ToString() + " && tar -acf quarantine.zip " + proc.MainModule.FileName + " && del " + proc.MainModule.FileName,
@@ -131,6 +141,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
