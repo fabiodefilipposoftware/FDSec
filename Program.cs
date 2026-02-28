@@ -67,7 +67,9 @@ namespace FDSec
         {
             using (SHA256 sha = SHA256.Create())
             {
-                string[] blackhashes = await DatabaseHashes();
+                HashSet<string> blackhashes = new HashSet<string>(DatabaseHashes(), StringComparer.OrdinalIgnoreCase);
+                //HashSet<string> whitehashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                //blackhashes = await DatabaseHashes();
                 //string[] whitehashes = await WhiteHashes();
                 string[] signatures = await DatasetSignature();
                 if(blackhashes != null && signatures != null) // && whitehashes != null)
@@ -102,7 +104,8 @@ namespace FDSec
                                         {
                                             string malwarehex = BitConverter.ToString(malwarebuffer).Replace("-", String.Empty);
                                             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty).ToLower();
-                                            if (Array.IndexOf(blackhashes, malwarehash) > -1 || await CheckSignature(signatures, malwarehex))
+                                            //if (Array.IndexOf(blackhashes, malwarehash) > -1 || await CheckSignature(signatures, malwarehex))
+                                            if(blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarehex))
                                             {
                                                 ProcessStartInfo startInfo = new ProcessStartInfo
                                                 {
@@ -127,6 +130,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
