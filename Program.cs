@@ -67,7 +67,7 @@ namespace FDSec
         {
             using (SHA256 sha = SHA256.Create())
             {
-                HashSet<string> blackhashes = new HashSet<string>(DatabaseHashes(), StringComparer.OrdinalIgnoreCase);
+                HashSet<string> blackhashes = new HashSet<string>(await DatabaseHashes(), StringComparer.OrdinalIgnoreCase);
                 //HashSet<string> whitehashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 //blackhashes = await DatabaseHashes();
                 //string[] whitehashes = await WhiteHashes();
@@ -130,6 +130,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
