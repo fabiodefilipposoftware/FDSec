@@ -17,7 +17,7 @@ namespace FDSec
             {
                 using (HttpClient hc = new HttpClient())
                 {
-                    return (await hc.GetStringAsync("dataseturl")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/malwaresignatures.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
             catch { }
@@ -113,4 +113,5 @@ namespace FDSec
         }
     }
 }
+
 
