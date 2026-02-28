@@ -37,6 +37,19 @@ namespace FDSec
             return null;
         }
 
+        private static async Task<string[]> WhiteHashes()
+        {
+            try
+            {
+                using (HttpClient hc = new HttpClient())
+                {
+                    return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/whitelist.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+            catch { }
+            return null;
+        }
+
         private static async Task<bool> CheckSignature(string[] signatures, string malwarebuffer)
         {
             foreach(string signature in signatures)
@@ -55,8 +68,9 @@ namespace FDSec
             using (SHA256 sha = SHA256.Create())
             {
                 string[] blackhashes = await DatabaseHashes();
+                //string[] whitehashes = await WhiteHashes();
                 string[] signatures = await DatasetSignature();
-                if(blackhashes != null && signatures != null)
+                if(blackhashes != null && signatures != null) // && whitehashes != null)
                 {
                     if (args.Length == 1)
                     {
@@ -113,6 +127,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
