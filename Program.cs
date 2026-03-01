@@ -427,7 +427,7 @@ namespace FDSecOptimized
                                             }
                                             else
                                             {
-                                                Console.Error.WriteLine("Good file! " + args[0]);
+                                                //Console.Error.WriteLine("Good file! " + args[0]);
                                             }
                                         }
                                     }
