@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace FDSecOptimized
 {
     // ============================= 
-    // NODI LOGICI (AND/OR/Pattern) 
+    // LOGIC NODES (AND/OR/Pattern) 
     // ============================= 
     abstract class SigNode
     {
@@ -65,7 +65,7 @@ namespace FDSecOptimized
     }
 
     // ============================= 
-    // PARSER FIRMA 
+    // PARSER SIGNATURES 
     // ============================= 
     static class SignatureParser
     {
@@ -191,7 +191,7 @@ namespace FDSecOptimized
             for (int i = 0; i < data.Length; i++)
             {
                 byte b = data[i];
-                // PREFILTER: ignora byte che non fanno parte dei più rari dei pattern 
+                // PREFILTER: ignore byte that not be part of most rares of patterns
                 if (rareBytes[b] == 0) continue;
 
                 while (node != null && node.Next[b] == null)
@@ -232,7 +232,7 @@ namespace FDSecOptimized
                 byte[] b = HexToBytes(p);
                 foreach (var x in b) counts[x]++;
             }
-            // rarità = 1 se presente meno volte 
+            // rarity = 1 if present few times 
             for (int i = 0; i < 256; i++) counts[i] = (byte)(counts[i] <= 1 ? 1 : 0);
             return counts;
         }
@@ -270,6 +270,19 @@ namespace FDSecOptimized
             return null;
         }
 
+        private static async Task<string[]> DatabaseWhiteHashes()
+        {
+            try
+            {
+                using (HttpClient hc = new HttpClient())
+                {
+                    return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/whitehashes.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+            catch (Exception ex) { Console.Error.WriteLine(ex.Message + "\r\n" + ex.StackTrace); }
+            return null;
+        }
+
         private static async Task<bool> CheckSignature(string[] signatures, string processname)
         {
             foreach (string signature in signatures)
@@ -290,7 +303,7 @@ namespace FDSecOptimized
                     aho.AddPattern(Utils.HexToBytes(kv.Key), kv.Value);
                 aho.Build();
 
-                // Costruisco rareBytes prefilter 
+                // Build rareBytes prefilter 
                 byte[] rareBytes = Utils.BuildRareByteMap(unique);
 
                 using (var mmf = MemoryMappedFile.CreateFromFile(processname, FileMode.Open, null, 0, MemoryMappedFileAccess.Read))
@@ -348,12 +361,13 @@ namespace FDSecOptimized
             {
                 Console.Error.WriteLine("loading database hashes...");
                 HashSet<string> blackhashes = new HashSet<string>(await DatabaseHashes(), StringComparer.OrdinalIgnoreCase);
+                HashSet<string> whitehashes = new HashSet<string>(await DatabaseWhiteHashes(), StringComparer.OrdinalIgnoreCase);
                 Console.Error.WriteLine("loading dataset signatures...");
                 string[] signatures = await DatasetSignature();
                 if (blackhashes != null && signatures != null)
                 {
                     Console.Error.WriteLine("Start!");
-                    Console.Error.WriteLine(blackhashes.Count.ToString() + " hashes and " + signatures.Length + " signatures");
+                    Console.Error.WriteLine(blackhashes.Count.ToString() + " blackhashes, " + whitehashes.Count + " whitehashes and " + signatures.Length + " signatures");
                     if (args.Length == 1)
                     {
                         try
@@ -361,16 +375,19 @@ namespace FDSecOptimized
                             if (File.Exists(args[0]))
                             {
                                 string malwarehash = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(args[0]))).Replace("-", String.Empty).ToLower();
-                                if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, args[0]))
+                                if (!whitehashes.Contains(malwarehash))
                                 {
-                                    Console.Error.WriteLine("MALWARE FOUND! " + args[0]);
-                                    Process.Start(new ProcessStartInfo
+                                    if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, args[0]))
                                     {
-                                        FileName = "cmd.exe",
-                                        Arguments = $"/c tar -acf quarantine.zip {args[0]} && del {args[0]}",
-                                        CreateNoWindow = true,
-                                        UseShellExecute = false
-                                    }).WaitForExit();
+                                        Console.Error.WriteLine("MALWARE FOUND! " + args[0]);
+                                        Process.Start(new ProcessStartInfo
+                                        {
+                                            FileName = "cmd.exe",
+                                            Arguments = $"/c tar -acf quarantine.zip {args[0]} && del {args[0]}",
+                                            CreateNoWindow = true,
+                                            UseShellExecute = false
+                                        }).WaitForExit();
+                                    }
                                 }
                             }
                         }
@@ -378,7 +395,6 @@ namespace FDSecOptimized
                     }
                     else
                     {
-
                         while (true)
                         {
                             // Scan processi 
@@ -392,15 +408,18 @@ namespace FDSecOptimized
                                         if (malwarebuffer != null)
                                         {
                                             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty).ToLower();
-                                            if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, proc.MainModule.FileName))
+                                            if (!whitehashes.Contains(malwarehash))
                                             {
-                                                Process.Start(new ProcessStartInfo
+                                                if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, proc.MainModule.FileName))
                                                 {
-                                                    FileName = "taskkill",
-                                                    Arguments = $"/F /T /PID {proc.Id} && tar -acf quarantine.zip {proc.MainModule.FileName} && del {proc.MainModule.FileName}",
-                                                    CreateNoWindow = true,
-                                                    UseShellExecute = false
-                                                }).WaitForExit();
+                                                    Process.Start(new ProcessStartInfo
+                                                    {
+                                                        FileName = "taskkill",
+                                                        Arguments = $"/F /T /PID {proc.Id} && tar -acf quarantine.zip {proc.MainModule.FileName} && del {proc.MainModule.FileName}",
+                                                        CreateNoWindow = true,
+                                                        UseShellExecute = false
+                                                    }).WaitForExit();
+                                                }
                                             }
                                         }
                                     }
