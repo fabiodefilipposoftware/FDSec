@@ -276,7 +276,7 @@ namespace FDSecOptimized
             {
                 using (HttpClient hc = new HttpClient())
                 {
-                    return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/whitehashes.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/whitelist.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
             catch (Exception ex) { Console.Error.WriteLine(ex.Message + "\r\n" + ex.StackTrace); }
@@ -389,6 +389,10 @@ namespace FDSecOptimized
                                         }).WaitForExit();
                                     }
                                 }
+                                else
+                                {
+                                    Console.Error.WriteLine("Good file! " + args[0]);
+                                }
                             }
                         }
                         catch { }
@@ -421,6 +425,10 @@ namespace FDSecOptimized
                                                     }).WaitForExit();
                                                 }
                                             }
+                                            else
+                                            {
+                                                Console.Error.WriteLine("Good file! " + args[0]);
+                                            }
                                         }
                                     }
                                     catch { }
@@ -443,4 +451,5 @@ namespace FDSecOptimized
             }
         }
     }
+
 }
