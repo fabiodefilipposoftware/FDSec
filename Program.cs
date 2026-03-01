@@ -25,13 +25,26 @@ namespace FDSec
             return null;
         }
 
-        private static async Task<string[]> DatabaseHashes()
+        private static async Task<string[]> DatabaseBlackHashes()
         {
             try
             {
                 using (HttpClient hc = new HttpClient())
                 {
                     return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/malwarehashes.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        private static async Task<string[]> DatabaseWhiteHashes()
+        {
+            try
+            {
+                using (HttpClient hc = new HttpClient())
+                {
+                    return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/whitelist.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
             catch { }
@@ -58,14 +71,16 @@ namespace FDSec
         {
             using (SHA256 sha = SHA256.Create())
             {
-                Console.Error.WriteLine("loading database hashes...");
-                HashSet<string> blackhashes = new HashSet<string>(await DatabaseHashes(), StringComparer.OrdinalIgnoreCase);
+                Console.Error.WriteLine("loading database blackhashes...");
+                HashSet<string> blackhashes = new HashSet<string>(await DatabaseBlackHashes(), StringComparer.OrdinalIgnoreCase);
+                Console.Error.WriteLine("loading database whitehashes...");
+                HashSet<string> whitehashes = new HashSet<string>(await DatabaseWhiteHashes(), StringComparer.OrdinalIgnoreCase);
                 Console.Error.WriteLine("loading dataset signatures...");
                 string[] signatures = await DatasetSignature();
                 if (blackhashes != null && signatures != null)
                 {
                     Console.Error.WriteLine("Start!");
-                    Console.Error.WriteLine(blackhashes.Count.ToString() + " hashes and " + signatures.Length + " signatures");
+                    Console.Error.WriteLine(blackhashes.Count.ToString() + "blackhashes, " + whitehashes.Count.ToString() + " whitehashes and " + signatures.Length + " signatures");
                     if (args.Length == 1)
                     {
                         try
@@ -74,16 +89,23 @@ namespace FDSec
                             {
                                 byte[] malwarebuffer = File.ReadAllBytes(args[0]);
                                 string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty).ToLower();
-                                if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarebuffer))
+                                if (!whitehashes.Contains(malwarehash))
                                 {
-                                    Console.Error.WriteLine("MALWARE FOUND! " + args[0]);
-                                    Process.Start(new ProcessStartInfo
+                                    if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarebuffer))
                                     {
-                                        FileName = "cmd.exe",
-                                        Arguments = $"/c tar -acf quarantine.zip {args[0]} && del {args[0]}",
-                                        CreateNoWindow = true,
-                                        UseShellExecute = false
-                                    }).WaitForExit();
+                                        Console.Error.WriteLine("MALWARE FOUND! " + args[0]);
+                                        Process.Start(new ProcessStartInfo
+                                        {
+                                            FileName = "cmd.exe",
+                                            Arguments = $"/c tar -acf quarantine.zip {args[0]} && del {args[0]}",
+                                            CreateNoWindow = true,
+                                            UseShellExecute = false
+                                        }).WaitForExit();
+                                    }
+                                }
+                                else
+                                {
+                                    Console.Error.WriteLine("GOOD File! " + args[0]);
                                 }
                             }
                         }
@@ -104,15 +126,18 @@ namespace FDSec
                                         if (malwarebuffer != null)
                                         {
                                             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty).ToLower();
-                                            if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarebuffer))
+                                            if (!whitehashes.Contains(malwarehash))
                                             {
-                                                Process.Start(new ProcessStartInfo
+                                                if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarebuffer))
                                                 {
-                                                    FileName = "taskkill",
-                                                    Arguments = $"/F /T /PID {proc.Id} && tar -acf quarantine.zip {proc.MainModule.FileName} && del {proc.MainModule.FileName}",
-                                                    CreateNoWindow = true,
-                                                    UseShellExecute = false
-                                                }).WaitForExit();
+                                                    Process.Start(new ProcessStartInfo
+                                                    {
+                                                        FileName = "taskkill",
+                                                        Arguments = $"/F /T /PID {proc.Id} && tar -acf quarantine.zip {proc.MainModule.FileName} && del {proc.MainModule.FileName}",
+                                                        CreateNoWindow = true,
+                                                        UseShellExecute = false
+                                                    }).WaitForExit();
+                                                }
                                             }
                                         }
                                     }
