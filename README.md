@@ -1,11 +1,16 @@
 # FDSec
-## A sort of Antivirus
+## A sort of Antivirus🦠 for Windows
 
 I am trying to create an Antivirus too.
 
-## WARNING:
+## ⚠️WARNING⚠️:
 
-Read and check the code before compiling and running it in production!
+Read and check the code before compiling and running it in production (Virtual Machine)!
 ## How to use it:
 
-Create a new project and paste the code inside Program.cs, read and check, compile it and execute the binary! I suggest Framework 4.7 or higher!
+1. Create a new project in Visual Studio;
+2. Paste the code inside Program.cs;
+3. <strong>READ</strong> and <strong>CHECK</strong> the code;
+4. Compile it and execute the binary!
+
+I suggest Framework 4.7 or higher!
