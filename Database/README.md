@@ -1,7 +1,7 @@
 # Here there will be blacklist and whitelist hashes and signatures dataset
 
 ## HASHES
-You can add malware sha256 hashes from your analysis or other resources;
+You can add malware sha256 hashes from your analysis or other open source and free resources, according Licenses;
 
 ## SIGNATURES
 You can add hexadecimal signatures with no \x nor blank/backspace, like this <strong>a1b2c3</strong>;
