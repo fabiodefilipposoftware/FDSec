@@ -5,7 +5,9 @@ You can add malware sha256 hashes from your analysis or other open source and fr
 
 sha256 hashes resources:
 
-[romainmarcoux](https://github.com/romainmarcoux/malicious-hash)
+[romainmarcoux/malicious-hash](https://github.com/romainmarcoux/malicious-hash)
+
+[Siradankullanici/Xylent](https://github.com/siradankullanici/xylent)
 
 ## SIGNATURES
 You can add hexadecimal signatures with no \x nor blank/backspace, like this <strong>a1b2c3</strong>;
