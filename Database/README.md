@@ -3,6 +3,10 @@
 ## HASHES
 You can add malware sha256 hashes from your analysis or other open source and free resources, according Licenses;
 
+sha256 hashes resources:
+
+[romainmarcoux](https://github.com/romainmarcoux/malicious-hash)
+
 ## SIGNATURES
 You can add hexadecimal signatures with no \x nor blank/backspace, like this <strong>a1b2c3</strong>;
 
