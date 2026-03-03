@@ -10,6 +10,6 @@ sha256 hashes resources:
 [Siradankullanici/Xylent](https://github.com/siradankullanici/xylent)
 
 ## SIGNATURES
-You can add hexadecimal signatures with no \x nor blank/backspace, like this <strong>a1b2c3</strong>;
+You can add hexadecimal signatures with no \x nor blank/backspace, like this <strong>a1b2c3</strong> INSIDE round brackets, example (00a1b2c3d4e5f6);
 
 You can write conditions, for example <strong>(a1b2c3 AND d4e5f6) OR (b1c2d3 AND e4f5a6)</strong>;
