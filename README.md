@@ -19,10 +19,11 @@ Read and check the code before compiling and running it in production (Virtual M
 I suggest Framework 4.7 or higher!
 
 ## Features
-- Recursive scan processes;
+- scan processes in loop;
 - Arbitrary scan single file;
-- Recursive scan remote ip connections;
-- automatic exclusion of system software (by whitelist hashes);
+- recursive scan folder;
+- scan remote ip connections in loop;
+- automatic exclusion of legittimate software (by whitelist hashes);
 
 ## Technologies
 - blacklist and whitelist of sha256 hashes;
