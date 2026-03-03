@@ -203,7 +203,7 @@ namespace FDSec
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
             if (!whitehashes.Contains(malwarehash))
             {
-                if (blackhashes.Contains(malwarehash) || (await CheckSignature(signatures, malwarebuffer) && await CheckEntropy(malwarebuffer) && await CheckMetadata(singlefile)))
+                if (blackhashes.Contains(malwarehash) || (await CheckSignature(signatures, malwarebuffer) && await CheckEntropy(malwarebuffer) && await !CheckMetadata(singlefile)))
                 {
                     Console.Error.WriteLine("MALWARE FOUND! " + singlefile);
                     /*Process.Start(new ProcessStartInfo
@@ -356,4 +356,5 @@ namespace FDSec
         }
     }
 }
+
 
