@@ -174,9 +174,10 @@ namespace FDSec
 
                 double entropy = 0.0;
                 int len = malwarebuffer.Length;
+                if (len == 0) return false;
                 for (int i = 0; i < 256; i++)
                 {
-                    if (counts[0] == 0)
+                    if (counts[i] == 0)
                         continue;
 
                     double p = (double)counts[i] / len;
@@ -355,3 +356,4 @@ namespace FDSec
         }
     }
 }
+
