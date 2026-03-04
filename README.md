@@ -2,7 +2,7 @@
 ## A sort of Antivirus🦠 for Windows
 
 [![License](https://img.shields.io/badge/license-GPv3-blue.svg)](LICENSE)
-![Platform](https://img.shields.io/badge/platform-windows-lightgrey.svg)
+![Platform](https://img.shields.io/badge/platform-windows-green.svg)
 
 I am trying to create an Antivirus too.
 
