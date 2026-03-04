@@ -139,7 +139,7 @@ namespace FDSec
             {
                 if (blackips.Contains(singleIp))
                 {
-                    Console.Error.WriteLineAsync("MALWARE CONNECTED to " + singleIp + " ...");
+                    Console.Error.WriteLineAsync("\r\nMALWARE CONNECTED to " + singleIp + " ...");
                     return true;
                 }
             }
@@ -152,12 +152,12 @@ namespace FDSec
             {
                 X509Certificate bcert = X509Certificate.CreateFromSignedFile(malwarefilename);
                 X509Certificate2 cert = new X509Certificate2(bcert);
-                Console.Error.WriteLineAsync("signed by " + cert.Subject);
-                Console.Error.WriteLineAsync("issued from " + cert.Issuer);
-                Console.Error.WriteLineAsync("valid until " + cert.NotAfter);
+                Console.Error.WriteLineAsync("\r\nsigned by " + cert.Subject);
+                Console.Error.WriteLineAsync("\r\nissued from " + cert.Issuer);
+                Console.Error.WriteLineAsync("\r\nvalid until " + cert.NotAfter);
                 if (cert.Verify())
                 {
-                    Console.Error.WriteLineAsync("firma valida");
+                    Console.Error.WriteLineAsync("\r\nvalid signature!");
                     return true;
                 }
             }
@@ -220,12 +220,12 @@ namespace FDSec
                 }
                 else
                 {
-                    Console.Error.WriteLine("No malicious data: " + singlefile);
+                    Console.Error.WriteLineAsync("\r\nNo malicious data: " + singlefile);
                 }
             }
             else
             {
-                Console.Error.WriteLine("GOOD File! " + singlefile);
+                Console.Error.WriteLineAsync("\r\nGOOD File! " + singlefile);
             }
             return false;
         }
@@ -359,6 +359,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
