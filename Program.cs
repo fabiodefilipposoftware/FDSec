@@ -35,6 +35,7 @@ namespace FDSec
         private static HashSet<string> blackIps;
         private static string[] signatures;
         private static SHA256 sha = SHA256.Create();
+        private static ulong numfiles = 0;
 
         private static async Task<string[]> DatasetSignature()
         {
@@ -199,13 +200,15 @@ namespace FDSec
 
         private static async Task<bool> FileValutation(string singlefile)
         {
+            numfiles++;
+            Console.Error.WriteAsync("\rScanned " + numfiles.ToString() + " files");
             byte[] malwarebuffer = File.ReadAllBytes(singlefile);
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
             if (!whitehashes.Contains(malwarehash))
             {
                 if (blackhashes.Contains(malwarehash) || (await CheckSignature(signatures, malwarebuffer) && await CheckEntropy(malwarebuffer) && !await CheckMetadata(singlefile)))
                 {
-                    Console.Error.WriteLine("MALWARE FOUND! " + singlefile);
+                    Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     /*Process.Start(new ProcessStartInfo
                     {
                         FileName = "cmd.exe",
@@ -356,6 +359,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
