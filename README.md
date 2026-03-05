@@ -18,6 +18,22 @@ Read and check the code before compiling and running it in production (Virtual M
 
 I suggest Framework 4.7 or higher!
 
+1. Scan processes il loop:
+```
+fdsec.exe
+```
+
+2. Scan a file then exit:
+```
+fdsec.exe suspicious-file.exe
+```
+
+3. Scan recursively a folder:
+```
+fdsec.exe .\folder\
+```
+
+
 ## Features
 - scan processes in loop;
 - Arbitrary scan single file;
