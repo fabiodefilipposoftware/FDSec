@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq.Expressions;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -161,7 +161,10 @@ namespace FDSec
                     return true;
                 }
             }
-            catch{}
+            catch
+            {
+                Console.Error.WriteLineAsync("\r\nINVALID signature!");
+            }
             return false;
         }
 
@@ -184,12 +187,13 @@ namespace FDSec
                     double p = (double)counts[i] / len;
                     entropy -= p * Math.Log(p, 2);
                 }
+                Console.Error.WriteLineAsync("\r\nentropy = " + entropy.ToString());
                 if (entropy > 6.5)
                 {
                     return true;
                 }
             }
-            catch{}
+            catch { }
             return false;
         }
 
@@ -206,17 +210,14 @@ namespace FDSec
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
             if (!whitehashes.Contains(malwarehash))
             {
-                if (blackhashes.Contains(malwarehash) || (await CheckSignature(signatures, malwarebuffer) && await CheckEntropy(malwarebuffer) && !await CheckMetadata(singlefile)))
+                if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarebuffer))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
-                    /*Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = $"/c tar -acf quarantine.zip {args[0]} && del {args[0]}",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    }).WaitForExit();*/
                     return true;
+                }
+                else if (await CheckEntropy(malwarebuffer) && !await CheckMetadata(singlefile))
+                {
+                    Console.Error.WriteLineAsync("\r\nSuspicious file: " + singlefile);
                 }
                 else
                 {
@@ -244,12 +245,16 @@ namespace FDSec
 
                 foreach (string singledirectory in Directory.GetDirectories(singledirecotry))
                 {
-                   await ScanningDirectory(singledirectory);
+                    await ScanningDirectory(singledirectory);
                 }
             }
             catch { }
         }
 
+        private static string Sanitize(string input)
+        {
+            return new string(input.Where(c => c >= 32 && c <= 127).ToArray());
+        }
         static async Task Main(string[] args)
         {
             Console.Error.WriteLine("loading database blackhashes...");
@@ -262,89 +267,66 @@ namespace FDSec
             signatures = await DatasetSignature();
             if (blackhashes != null && whitehashes != null && blackIps != null && signatures != null)
             {
-                Console.Error.WriteLine("Start!");
                 Console.Error.WriteLine(blackhashes.Count.ToString() + " blackhashes, " + whitehashes.Count.ToString() + " whitehashes, " + blackIps.Count + " blackIps and " + signatures.Length + " signatures");
                 if (args.Length == 1)
                 {
                     try
                     {
-                        if (Directory.Exists(args[0]) && !File.Exists(args[0]))
+                        if (args[0].Length <= 260)
                         {
-                            ScanningDirectory(args[0]);
-                        }
-                        else if (File.Exists(args[0]))
-                        {
-                            if(await FileValutation(args[0]))
+                            string argv = Sanitize(args[0]);
+                            if (Directory.Exists(argv) && !File.Exists(argv))
                             {
-                                GetQuarantine(args[0]);
+                                ScanningDirectory(argv);
                             }
-                            /*byte[] malwarebuffer = File.ReadAllBytes(args[0]);
-                            string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
-                            if (!whitehashes.Contains(malwarehash))
+                            else if (File.Exists(argv))
                             {
-                                if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarebuffer))
+                                if (await FileValutation(argv))
                                 {
-                                    Console.Error.WriteLine("MALWARE FOUND! " + args[0]);
-                                    /*Process.Start(new ProcessStartInfo
-                                    {
-                                        FileName = "cmd.exe",
-                                        Arguments = $"/c tar -acf quarantine.zip {args[0]} && del {args[0]}",
-                                        CreateNoWindow = true,
-                                        UseShellExecute = false
-                                    }).WaitForExit();
-                                    GetQuarantine(args[0]);
+                                    GetQuarantine(argv);
                                 }
                             }
                             else
                             {
-                                Console.Error.WriteLine("GOOD File! " + args[0]);
-                            }*/
+                                Console.Error.WriteLine(argv + " does not exist!");
+                            }
                         }
                     }
                     catch { }
                 }
                 else
                 {
+                    List<int> pid = new List<int>();
                     while (true)
                     {
-                        // Scan processi 
+                        // Scanning processes
                         foreach (Process proc in Process.GetProcesses())
                         {
                             if (proc.Id != Process.GetCurrentProcess().Id)
                             {
                                 try
                                 {
-                                    byte[] malwarebuffer = File.ReadAllBytes(proc.MainModule.FileName);
-                                    if (malwarebuffer != null)
+                                    if (!pid.Contains(proc.Id))
                                     {
-                                        string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
-                                        if (!whitehashes.Contains(malwarehash))
+                                        Console.Error.WriteLine("Scanning PID " + proc.Id);
+                                        pid.Add(proc.Id);
+                                        byte[] malwarebuffer = File.ReadAllBytes(proc.MainModule.FileName);
+                                        if (malwarebuffer != null)
                                         {
-                                            /*Task<bool> checkips = Task.Run(() => CheckIpsByPid(blackIps, proc.Id));
-                                            Task<bool> checkhash = Task.Run(() => blackhashes.Contains(malwarehash));
-                                            Task<bool> checksignature = Task.Run(() => CheckSignature(signatures, malwarebuffer));
-                                            Task<bool> result = await Task.WhenAny(new List<Task<bool>> { checkhash, checksignature, checkips });
-                                            if (await result)
+                                            string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
+                                            if (!whitehashes.Contains(malwarehash))
                                             {
-                                                Process.Start(new ProcessStartInfo
+                                                if (await FileValutation(proc.MainModule.FileName) || await CheckIpsByPid(blackIps, proc.Id))
                                                 {
-                                                    FileName = "taskkill",
-                                                    Arguments = $"/F /T /PID {proc.Id}", //&& tar -acf quarantine.zip {proc.MainModule.FileName} && del {proc.MainModule.FileName}",
-                                                    CreateNoWindow = true,
-                                                    UseShellExecute = false
-                                                }).WaitForExit();
-                                                GetQuarantine(proc.MainModule.FileName);
-                                            }*/
-                                            if (await FileValutation(proc.MainModule.FileName) && await CheckIpsByPid(blackIps, proc.Id))
-                                            {
-                                                Process.Start(new ProcessStartInfo
-                                                {
-                                                    FileName = "taskkill",
-                                                    Arguments = $"/F /T /PID {proc.Id}",
-                                                    CreateNoWindow = true,
-                                                    UseShellExecute = false
-                                                }).WaitForExit();
-                                                GetQuarantine(proc.MainModule.FileName);
+                                                    Process.Start(new ProcessStartInfo
+                                                    {
+                                                        FileName = "taskkill",
+                                                        Arguments = $"/F /T /PID {proc.Id}",
+                                                        CreateNoWindow = true,
+                                                        UseShellExecute = false
+                                                    }).WaitForExit();
+                                                    GetQuarantine(proc.MainModule.FileName);
+                                                }
                                             }
                                         }
                                     }
@@ -352,15 +334,22 @@ namespace FDSec
                                 catch { }
                             }
                         }
-                        Thread.Sleep(250);
+                        for(int i = 0; i < pid.Count; i++)
+                        {
+                            try
+                            {
+                                if (Process.GetProcessById(pid[i]).HasExited)
+                                {
+                                    pid.Remove(i);
+                                }
+                            }
+                            catch 
+                            {}
+                        }
+                        Thread.Sleep(100);
                     }
                 }
             }
         }
     }
 }
-
-
-
-
-
