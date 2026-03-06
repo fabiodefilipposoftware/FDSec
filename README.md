@@ -50,8 +50,10 @@ fdsec.exe .\folder\
 - recursive scan folder;
 - scan remote ip connections in loop;
 - automatic exclusion of legittimate software (by whitelist hashes);
+- (optional) radare2 scanner for dangerous functions;
 
 ## Technologies
 - blacklist and whitelist of sha256 hashes;
 - signatures;
 - blacklist of malicious ip;
+- dangerous functions;
