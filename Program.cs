@@ -234,7 +234,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if (await CheckEntropy(malwarebuffer) && !await CheckMetadata(singlefile) && await CheckFnc(singlefile))
+                else if (await CheckMetadata(malwarebuffer) && !await CheckFnc(singlefile) && await CheckEntropy(singlefile))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                 }
@@ -282,7 +282,7 @@ namespace FDSec
                 ProcessStartInfo si = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = $"/c " + Environment.CurrentDirectory + "\\bin\\radare2.exe -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" {singlefile}",
+                    Arguments = $"/c " + Environment.CurrentDirectory + "\\bin\\radare2.exe -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" " + singlefile,
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardOutput = true
@@ -412,4 +412,5 @@ namespace FDSec
             }
         }
     }
+
 }
