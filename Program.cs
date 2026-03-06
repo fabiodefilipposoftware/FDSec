@@ -282,7 +282,7 @@ namespace FDSec
                 ProcessStartInfo si = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = $"/c " + Environment.CurrentDirectory + "\\bin\\radare2.exe -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" " + singlefile,
+                    Arguments = $"/c " + Environment.CurrentDirectory + "\\bin\\radare2.exe -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" \"" + singlefile + "\"",
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardOutput = true
@@ -414,3 +414,4 @@ namespace FDSec
     }
 
 }
+
