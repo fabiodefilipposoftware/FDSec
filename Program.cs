@@ -34,9 +34,28 @@ namespace FDSec
         private static HashSet<string> whitehashes;
         private static HashSet<string> blackIps;
         private static string[] signatures;
-        private static SHA256 sha = SHA256.Create();
+        private static readonly SHA256 sha = SHA256.Create();
         private static ulong numfiles = 0;
-
+        private static readonly string[] dangerousfncs = new string[] { 
+            "RegCreateKeyEx", "RegDeleteKey", "RegEnumKeyEx", "RegOpenKeyEx", "RegSetValueEx",
+            "VirtualAlloc", "VirtualFree", "VirtualProtect", "VirtualQuery", "CreateThread",
+            "CreateProcess", "CreateMutex", "TerminateThread", "MapViewOfFile", "UnmapViewOfFile",
+            "socket", "connect", "send", "recv", "shutdown", "closesocket",
+            "inet_addr", "inet_ntoa", "inet_pton", "htons", "gethostbyname",
+            "InternetOpen", "InternetConnect", "HttpOpenRequest", "HttpSendRequest", "InternetReadFile",
+            "InternetCloseHandle", "InternetCrackUrl", "HttpQueryInfo", "WriteFile", "SetFilePointer",
+            "CreateToolHelp32Snapshot", "Process32First", "Process32Next", "CreateFile", "ReadFile",
+            "MoveFileEx", "FindFirstFile", "FindNextFile", "FindClose", "GetFileSize",
+            "CryptAcquireContext", "CryptGenKey", "CryptGenRandom", "CryptEncrypt", "CryptDecrypt",
+            "CryptImportKey", "CryptExportKey", "CryptDestroyKey", "CryptReleaseContext", "LookupAccountSid",
+            "LsaAddAccountRights", "LsaConnectUntrusted", "InitializeSecurityDescriptor", "EqualDomainSid",
+            "WNetOpenEnum", "WNetEnumResource", "WNetAddConnection2", "WNetCloseEnum", "GetTickCount", 
+            "QueryPerformanceCounter", "Sleep", "IsProcessorFeaturePresent", "GetProcAddress", "FreeLibrary",
+            "GetModuleHandle", "IsDebuggerPresent", "FlushInstructionCache", "TerminateProcess", "GetCurrentProcess",
+            "GetCurrentThreadId", "WinHttpOpen", "WinHttpConnect", "WinHttpOpenRequest", "WinHttpSendRequest",
+            "WinHttpReceiveResponse", "WinHttpReadData", "WinHttpQueryHeaders", "WinHttpCrackUrl", "WinHttpCloseHandle",
+            "WinHttpSetTimeouts", "GetFileAttributesEx", "GetComputerName", "GetLogicalDrives", "GlobalMemoryStatusEx",
+            "GetDiskFreeSpaceEx", "GetTempPath", "GetTimeZoneInformation"};
         private static async Task<string[]> DatasetSignature()
         {
             try
@@ -215,9 +234,9 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if (await CheckEntropy(malwarebuffer) && !await CheckMetadata(singlefile))
+                else if (await CheckEntropy(malwarebuffer) && !await CheckMetadata(singlefile) && await CheckFnc(singlefile))
                 {
-                    Console.Error.WriteLineAsync("\r\nSuspicious file: " + singlefile);
+                    Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                 }
                 else
                 {
@@ -255,6 +274,47 @@ namespace FDSec
         {
             return new string(input.Where(c => c >= 32 && c <= 127).ToArray());
         }
+        private static async Task<bool> CheckFnc(string singlefile)
+        {
+            if (File.Exists(Environment.CurrentDirectory + "\\bin\\radare2.exe"))
+            {
+                Process radare2 = new Process();
+                ProcessStartInfo si = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c " + Environment.CurrentDirectory + "\\bin\\radare2.exe -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" {singlefile}",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                radare2.StartInfo = si;
+                radare2.Start();
+                string[] functions = radare2.StandardOutput.ReadToEnd().Split();
+                uint matches = 0;
+                foreach (string function in functions)
+                {
+                    foreach (string dangerousfnc in dangerousfncs)
+                    {
+                        if (function.Contains(dangerousfnc))
+                        {
+                            matches++;
+                        }
+                    }
+
+                }
+                if (matches >= 8)
+                {
+                    return true;
+                }
+                Console.Error.WriteLine(matches.ToString() + " functions found!");
+            }
+            else
+            {
+                Console.Error.WriteLine("radare2 not found!");
+            }
+            return false;
+        }
+
         static async Task Main(string[] args)
         {
             Console.Error.WriteLine("loading database blackhashes...");
@@ -334,7 +394,7 @@ namespace FDSec
                                 catch { }
                             }
                         }
-                        for(int i = 0; i < pid.Count; i++)
+                        for (int i = 0; i < pid.Count; i++)
                         {
                             try
                             {
@@ -343,8 +403,8 @@ namespace FDSec
                                     pid.Remove(i);
                                 }
                             }
-                            catch 
-                            {}
+                            catch
+                            { }
                         }
                         Thread.Sleep(100);
                     }
