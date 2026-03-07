@@ -276,7 +276,7 @@ namespace FDSec
         }
         private static async Task<bool> CheckFnc(string singlefile)
         {
-            string radare2path = Path.Combine(Environment.ProcessPath, "bin\\radare2.exe");
+            string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
             if (File.Exists(radare2path))
             {
                 Process radare2 = new Process();
