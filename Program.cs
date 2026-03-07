@@ -276,13 +276,14 @@ namespace FDSec
         }
         private static async Task<bool> CheckFnc(string singlefile)
         {
-            if (File.Exists(Environment.CurrentDirectory + "\\bin\\radare2.exe"))
+            string radare2path = Path.Combine(Environment.ProcessPath, "bin\\radare2.exe");
+            if (File.Exists(radare2path))
             {
                 Process radare2 = new Process();
                 ProcessStartInfo si = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = $"/c " + Environment.CurrentDirectory + "\\bin\\radare2.exe -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" \"" + singlefile + "\"",
+                    Arguments = $"/c " + radare2path + " -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" \"" + singlefile + "\"",
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardOutput = true
@@ -414,4 +415,5 @@ namespace FDSec
     }
 
 }
+
 
