@@ -15,7 +15,7 @@ Read and check the code before compiling and running it in production (Virtual M
 2. Paste the code inside Program.cs;
 3. <strong>READ</strong> and <strong>CHECK</strong> the code;
 4. Compile it and execute the binary!
-5. download and unzip radare2 in FDSec folder (copy the 'bin', 'include', 'lib' and share folder as showed below);
+5. (optional) download and unzip [radare2](https://github.com/radareorg/radare2) in FDSec folder (copy the 'bin', 'include', 'lib' and share folder as showed below);
 
 |<strong>FDSec folder</strong>|
 |:----------:|
