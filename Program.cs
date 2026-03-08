@@ -275,8 +275,10 @@ namespace FDSec
         {
             return new string(input.Where(c => c >= 32 && c <= 127).ToArray());
         }
+        
         private static async Task<bool> CheckFnc(string singlefile)
-        {
+        {
+
             if (File.Exists(radare2path))
             {
                 Process radare2 = new Process();
@@ -301,10 +303,11 @@ namespace FDSec
                             matches++;
                         }
                     }
-
                 }
+                Array.Clear(functions, 0, functions.Length);
                 if (matches >= 8)
                 {
+                    matches = 0;
                     return true;
                 }
                 Console.Error.WriteLine(matches.ToString() + " functions found!");
@@ -351,6 +354,7 @@ namespace FDSec
                             {
                                 Console.Error.WriteLine(argv + " does not exist!");
                             }
+                            argv = String.Empty;
                         }
                     }
                     catch { }
@@ -389,7 +393,9 @@ namespace FDSec
                                                     GetQuarantine(proc.MainModule.FileName);
                                                 }
                                             }
+                                            malwarehash = String.Empty;
                                         }
+                                        Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                                     }
                                 }
                                 catch { }
@@ -411,9 +417,13 @@ namespace FDSec
                     }
                 }
             }
+            blackhashes.Clear();
+            whitehashes.Clear();
+            blackIps.Clear();
+            Array.Clear(signatures, 0, signatures.Length);
         }
     }
-
 }
+
 
 
