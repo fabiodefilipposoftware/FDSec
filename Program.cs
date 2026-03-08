@@ -310,7 +310,8 @@ namespace FDSec
                     matches = 0;
                     return true;
                 }
-                Console.Error.WriteLine(matches.ToString() + " functions found!");
+                Console.Error.WriteLineAsync(matches.ToString() + " functions found!");
+                radare2.Dispose();
             }
             else
             {
@@ -424,6 +425,7 @@ namespace FDSec
         }
     }
 }
+
 
 
 
