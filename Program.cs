@@ -36,7 +36,7 @@ namespace FDSec
         private static string[] signatures;
         private static readonly SHA256 sha = SHA256.Create();
         private static ulong numfiles = 0;
-        string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
+        private static readonly string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
         private static readonly string[] dangerousfncs = new string[] { 
             "RegCreateKeyEx", "RegDeleteKey", "RegEnumKeyEx", "RegOpenKeyEx", "RegSetValueEx",
             "VirtualAlloc", "VirtualFree", "VirtualProtect", "VirtualQuery", "CreateThread",
