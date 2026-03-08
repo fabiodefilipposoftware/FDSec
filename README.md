@@ -28,7 +28,7 @@ Read and check the code before compiling and running it in production (Virtual M
 
 I suggest Framework 4.7 or higher!
 
-1. Scan processes il loop:
+1. Scan processes in loop:
 ```
 fdsec.exe
 ```
@@ -38,7 +38,7 @@ fdsec.exe
 fdsec.exe suspicious-file.exe
 ```
 
-3. Scan recursively a folder:
+3. Scan recursively a folder then exit:
 ```
 fdsec.exe .\folder\
 ```
