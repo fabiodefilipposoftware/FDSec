@@ -235,7 +235,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if (!await CheckMetadata(malwarebuffer) && await CheckFnc(singlefile) && await CheckEntropy(singlefile))
+                else if (!await CheckMetadata(singlefile) && await CheckFnc(singlefile) && await CheckEntropy(malwarebuffer))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                 }
@@ -517,6 +517,7 @@ if (function.Contains(dangerousfnc))
         }
     }
 }
+
 
 
 
