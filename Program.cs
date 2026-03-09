@@ -37,7 +37,7 @@ namespace FDSec
         private static readonly SHA256 sha = SHA256.Create();
         private static ulong numfiles = 0;
         private static readonly string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
-        private static readonly string[] dangerousfncs = new string[] { 
+        private static readonly string[] dangerousfncs = new string[] {
             "RegCreateKeyEx", "RegDeleteKey", "RegEnumKeyEx", "RegOpenKeyEx", "RegSetValueEx",
             "VirtualAlloc", "VirtualFree", "VirtualProtect", "VirtualQuery", "CreateThread",
             "CreateProcess", "CreateMutex", "TerminateThread", "MapViewOfFile", "UnmapViewOfFile",
@@ -50,7 +50,7 @@ namespace FDSec
             "CryptAcquireContext", "CryptGenKey", "CryptGenRandom", "CryptEncrypt", "CryptDecrypt",
             "CryptImportKey", "CryptExportKey", "CryptDestroyKey", "CryptReleaseContext", "LookupAccountSid",
             "LsaAddAccountRights", "LsaConnectUntrusted", "InitializeSecurityDescriptor", "EqualDomainSid",
-            "WNetOpenEnum", "WNetEnumResource", "WNetAddConnection2", "WNetCloseEnum", "GetTickCount", 
+            "WNetOpenEnum", "WNetEnumResource", "WNetAddConnection2", "WNetCloseEnum", "GetTickCount",
             "QueryPerformanceCounter", "Sleep", "IsProcessorFeaturePresent", "GetProcAddress", "FreeLibrary",
             "GetModuleHandle", "IsDebuggerPresent", "FlushInstructionCache", "TerminateProcess", "GetCurrentProcess",
             "GetCurrentThreadId", "WinHttpOpen", "WinHttpConnect", "WinHttpOpenRequest", "WinHttpSendRequest",
@@ -235,9 +235,15 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if (!await CheckMetadata(singlefile) && await CheckFnc(singlefile) && await CheckEntropy(malwarebuffer))
+                else if(!await CheckMetadata(singlefile) && await CheckEntropy(malwarebuffer))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
+                    return true;
+                }
+                else if (await CheckFnc(singlefile))
+                {
+                    Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
+                    return true;
                 }
                 else
                 {
@@ -275,7 +281,7 @@ namespace FDSec
         {
             return new string(input.Where(c => c >= 32 && c <= 127).ToArray());
         }
-        
+
         private static async Task<bool> CheckFnc(string singlefile)
         {
 
@@ -292,6 +298,12 @@ namespace FDSec
                 };
                 radare2.StartInfo = si;
                 radare2.Start();
+                radare2.WaitForExit(5000);
+                Process redare2Id = Process.GetProcessById(radare2.Id);
+                if (!redare2Id.HasExited)
+                {
+                    redare2Id.Kill();
+                }
                 string[] functions = radare2.StandardOutput.ReadToEnd().Split();
                 uint matches = 0;
                 foreach (string function in functions)
@@ -303,107 +315,104 @@ namespace FDSec
                             matches++;
                         }
 
-/*
-uint codeinjection = 0, sysregpersistance = 0, dataexfiltration = 0, httpdataexfiltration = 0, filecryptography = 0, antidbg = 0, envdetection = 0, antisandbox = 0, infostealer = 0, worming = 0;
+                        uint codeinjection = 0, sysregpersistance = 0, dataexfiltration = 0, httpdataexfiltration = 0, filecryptography = 0, antidbg = 0, envdetection = 0, antisandbox = 0, infostealer = 0, worming = 0;
 
-if (function.Contains(dangerousfnc))
-{
-   select (dangerousfnc)
-   {
-      case "VirtualAlloc":
-      case "VirtualProtect":
-      case "WriteFile":
-      case "RtlMoveMemory":
-      case "WriteProcessMemory":
-         codeinjection++;
-      break;
+                        if (function.Contains(dangerousfnc))
+                        {
+                            switch (dangerousfnc)
+                            {
+                                case "VirtualAlloc":
+                                case "VirtualProtect":
+                                //case "WriteFile":
+                                case "RtlMoveMemory":
+                                case "WriteProcessMemory":
+                                    codeinjection++;
+                                    break;
 
-      case "RegOpenKeyEx":
-      case "RegCreateKeyEx"
-      case "RegSetValueEx":
-         sysregpersistance++;
-      break;
+                                case "RegOpenKeyEx":
+                                case "RegCreateKeyEx":
+                                case "RegSetValueEx":
+                                    sysregpersistance++;
+                                    break;
 
-      case "socket"
-      case "connect"
-      case "send"
-         dataexfiltration++;
-      break;
+                                case "socket":
+                                case "connect":
+                                case "send":
+                                    dataexfiltration++;
+                                    break;
 
-      case "InternetOpen":
-      case "InternetConnect":
-      case "HttpOpenRequest":
-      case "HttpSendRequest":
-      case "InternetReadFile":
-         httpdataexfiltration++;
-      break;
+                                case "InternetOpen":
+                                case "InternetConnect":
+                                case "HttpOpenRequest":
+                                case "HttpSendRequest":
+                                case "InternetReadFile":
+                                    httpdataexfiltration++;
+                                    break;
 
-      case "FindFirstFile":
-      case "FindNextFile":
-      case "CreateFile":
-      case "ReadFile":
-      case "CryptEncrypt":
-      case "WriteFile":
-         filecryptography++;
-      break;
+                                case "FindFirstFile":
+                                case "FindNextFile":
+                                case "CreateFile":
+                                case "ReadFile":
+                                case "CryptEncrypt":
+                                case "WriteFile":
+                                    filecryptography++;
+                                    break;
 
-      case "IsDebuggerPresent":
-      case "TerminateProcess":
-         antidbg++;
-      break;
+                                case "IsDebuggerPresent":
+                                case "TerminateProcess":
+                                    antidbg++;
+                                    break;
 
-      case "QueryPerformanceCounter":
-      case "GetTickCount":
-      case "Sleep":
-         antisandbox++;
-      break;
+                                case "QueryPerformanceCounter":
+                                case "GetTickCount":
+                                case "Sleep":
+                                    antisandbox++;
+                                    break;
 
-      case "GlobalMemoryStatusEx":
-      case "GetDiskFreeSpaceEx":
-         envdetection++;
-      break;
+                                case "GlobalMemoryStatusEx":
+                                case "GetDiskFreeSpaceEx":
+                                    envdetection++;
+                                    break;
 
-      case "GetComputerName":
-      case "GetLogicalDrives":
-      case "GetTempPath":
-      case "LookupAccountSid":
-         infostealer++;
-      break;
+                                case "GetComputerName":
+                                case "GetLogicalDrives":
+                                case "GetTempPath":
+                                case "LookupAccountSid":
+                                    infostealer++;
+                                    break;
 
-      case "WNetOpenEnum":
-      case "WNetEnumResource":
-      case "WNetAddConnection2":
-         worming++;
-      break;
-   }
+                                case "WNetOpenEnum":
+                                case "WNetEnumResource":
+                                case "WNetAddConnection2":
+                                    worming++;
+                                    break;
+                            }
 
-   Array.Clear(functions, 0, functions.Length);
-
-   if ((codeinjection + sysregpersistance + dataexfiltration + httpdataexfiltration + filecryptography + antidbg + envdetection + antisandbox + infostealer + worming) > 8)
-   {
-      codeinjection = 0;
-      sysregpersistance = 0;
-      dataexfiltration = 0;
-      httpdataexfiltration = 0;
-      filecryptography = 0; antidbg = 0;
-      envdetection = 0;
-      antisandbox = 0;
-      infostealer = 0;
-      worming = 0;
-      return true;
-   }
-}
-*/
+                            Array.Clear(functions, 0, functions.Length);
+                            radare2.Dispose();
+                            if ((codeinjection + sysregpersistance + dataexfiltration + httpdataexfiltration + filecryptography + antidbg + envdetection + antisandbox + infostealer + worming) > 8)
+                            {
+                                codeinjection = 0;
+                                sysregpersistance = 0;
+                                dataexfiltration = 0;
+                                httpdataexfiltration = 0;
+                                filecryptography = 0; antidbg = 0;
+                                envdetection = 0;
+                                antisandbox = 0;
+                                infostealer = 0;
+                                worming = 0;
+                                return true;
+                            }
+                        }
                     }
                 }
-                Array.Clear(functions, 0, functions.Length);
+                /*Array.Clear(functions, 0, functions.Length);
                 if (matches >= 8)
                 {
                     matches = 0;
                     return true;
                 }
-                Console.Error.WriteLineAsync(matches.ToString() + " functions found!");
-                radare2.Dispose();
+                Console.Error.WriteLineAsync(matches.ToString() + " functions found!");*/
             }
             else
             {
@@ -517,8 +526,3 @@ if (function.Contains(dangerousfnc))
         }
     }
 }
-
-
-
-
-
