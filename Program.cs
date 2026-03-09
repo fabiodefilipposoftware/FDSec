@@ -302,6 +302,98 @@ namespace FDSec
                         {
                             matches++;
                         }
+
+/*
+uint codeinjection = 0, sysregpersistance = 0, dataexfiltration = 0, httpdataexfiltration = 0, filecryptography = 0, antidbg = 0, envdetection = 0, antisandbox = 0, infostealer = 0, worming = 0;
+
+if (function.Contains(dangerousfnc))
+{
+   select (dangerousfnc)
+   {
+      case "VirtualAlloc":
+      case "VirtualProtect":
+      case "WriteFile":
+      case "RtlMoveMemory":
+      case "WriteProcessMemory":
+         codeinjection++;
+      break;
+
+      case "RegOpenKeyEx":
+      case "RegCreateKeyEx"
+      case "RegSetValueEx":
+         sysregpersistance++;
+      break;
+
+      case "socket"
+      case "connect"
+      case "send"
+         dataexfiltration++;
+      break;
+
+      case "InternetOpen":
+      case "InternetConnect":
+      case "HttpOpenRequest":
+      case "HttpSendRequest":
+      case "InternetReadFile":
+         httpdataexfiltration++;
+      break;
+
+      case "FindFirstFile":
+      case "FindNextFile":
+      case "CreateFile":
+      case "ReadFile":
+      case "CryptEncrypt":
+      case "WriteFile":
+         filecryptography++;
+      break;
+
+      case "IsDebuggerPresent":
+      case "TerminateProcess":
+         antidbg++;
+      break;
+
+      case "QueryPerformanceCounter":
+      case "GetTickCount":
+      case "Sleep":
+         antisandbox++;
+      break;
+
+      case "GlobalMemoryStatusEx":
+      case "GetDiskFreeSpaceEx":
+         envdetection++;
+      break;
+
+      case "GetComputerName":
+      case "GetLogicalDrives":
+      case "GetTempPath":
+      case "LookupAccountSid":
+         infostealer++;
+      break;
+
+      case "WNetOpenEnum":
+      case "WNetEnumResource":
+      case "WNetAddConnection2":
+         worming++;
+      break;
+   }
+
+   Array.Clear(functions, 0, functions.Length);
+
+   if ((codeinjection + sysregpersistance + dataexfiltration + httpdataexfiltration + filecryptography + antidbg + envdetection + antisandbox + infostealer + worming) > 8)
+   {
+      codeinjection = 0;
+      sysregpersistance = 0;
+      dataexfiltration = 0;
+      httpdataexfiltration = 0;
+      filecryptography = 0; antidbg = 0;
+      envdetection = 0;
+      antisandbox = 0;
+      infostealer = 0;
+      worming = 0;
+      return true;
+   }
+}
+*/
                     }
                 }
                 Array.Clear(functions, 0, functions.Length);
