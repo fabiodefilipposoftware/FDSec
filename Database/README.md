@@ -1,4 +1,4 @@
-# Here there will be blacklist and whitelist hashes and signatures dataset
+# Here there will be blacklist, whitelist hashes and signatures dataset
 
 ## HASHES
 You can add malware sha256 hashes from your analysis or other open source and free resources, according Licenses;
