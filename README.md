@@ -30,17 +30,17 @@ I suggest Framework 4.7 or higher!
 
 1. Scan processes in loop:
 ```
-fdsec.exe
+C:\fdsec_folder> .\fdsec.exe
 ```
 
 2. Scan a file then exit:
 ```
-fdsec.exe suspicious-file.exe
+C:\fdsec_folder> .\fdsec.exe suspicious-file.exe
 ```
 
 3. Scan recursively a folder then exit:
 ```
-fdsec.exe .\folder\
+C:\fdsec_folder> .\fdsec.exe .\folder\
 ```
 
 
@@ -49,7 +49,7 @@ fdsec.exe .\folder\
 - Arbitrary scan single file;
 - recursive scan folder;
 - scan remote ip connections in loop;
-- automatic exclusion of legittimate software (by whitelist hashes);
+- automatic exclusion from legittimate software (by whitelist hashes);
 - (optional) radare2 scanner for dangerous functions;
 
 ## Technologies
