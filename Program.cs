@@ -288,7 +288,7 @@ namespace FDSec
             if (File.Exists(radare2path))
             {
                 Process radare2 = new Process();
-                ProcessStartInfo si = new ProcessStartInfo
+                radare2.StartInfo = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
                     Arguments = $"/c " + radare2path + " -q -e bin.relocs.apply=true -e anal.jmptbl.split=true -c \"e scr.color=0; aaa; iih\" \"" + singlefile + "\"",
@@ -296,7 +296,6 @@ namespace FDSec
                     UseShellExecute = false,
                     RedirectStandardOutput = true
                 };
-                radare2.StartInfo = si;
                 radare2.Start();
                 radare2.BeginOutputReadLine();
                 Process redare2Id = Process.GetProcessById(radare2.Id);
@@ -539,4 +538,5 @@ namespace FDSec
     }
 
 }
+
 
