@@ -305,7 +305,7 @@ namespace FDSec
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = "taskkill",
-                        Arguments = $"/F /T /PID {proc.Id}",
+                        Arguments = $"/F /T /PID {radare2.Id}",
                         CreateNoWindow = true,
                         UseShellExecute = false
                     }).Start();
@@ -539,3 +539,4 @@ namespace FDSec
     }
 
 }
+
