@@ -298,14 +298,25 @@ namespace FDSec
                 };
                 radare2.StartInfo = si;
                 radare2.Start();
-                radare2.WaitForExit(5000);
+                radare2.BeginOutputReadLine();
                 Process redare2Id = Process.GetProcessById(radare2.Id);
-                if (!redare2Id.HasExited)
+                if (!radare2.WaitForExit(5000))
                 {
-                    redare2Id.Kill();
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill",
+                        Arguments = $"/F /T /PID {proc.Id}",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    }).Start();
                 }
                 string[] functions = radare2.StandardOutput.ReadToEnd().Split();
                 uint matches = 0;
+                if(functions.Length == 0)
+                {
+                    Console.Error.WriteLineAsync("functions not found");
+                    return false;
+                }
                 foreach (string function in functions)
                 {
                     foreach (string dangerousfnc in dangerousfncs)
@@ -396,7 +407,8 @@ namespace FDSec
                                 sysregpersistance = 0;
                                 dataexfiltration = 0;
                                 httpdataexfiltration = 0;
-                                filecryptography = 0; antidbg = 0;
+                                filecryptography = 0;
+                                antidbg = 0;
                                 envdetection = 0;
                                 antisandbox = 0;
                                 infostealer = 0;
@@ -525,4 +537,5 @@ namespace FDSec
             Array.Clear(signatures, 0, signatures.Length);
         }
     }
+
 }
