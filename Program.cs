@@ -36,6 +36,7 @@ namespace FDSec
         private static string[] signatures;
         private static readonly SHA256 sha = SHA256.Create();
         private static ulong numfiles = 0;
+        private static string malwarehex = string.Empty;
         private static readonly string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
         private static readonly string[] dangerousfncs = new string[] {
             "RegCreateKeyEx", "RegDeleteKey", "RegEnumKeyEx", "RegOpenKeyEx", "RegSetValueEx",
@@ -109,9 +110,8 @@ namespace FDSec
             return null;
         }
 
-        private static async Task<bool> CheckSignature(byte[] malwarebuffer)
+        private static async Task<bool> CheckSignature()
         {
-            string malwarehex = BitConverter.ToString(malwarebuffer).Replace("-", String.Empty);
             //Console.Error.WriteLineAsync("Malware hexdump\r\n" + malwarehex);
             foreach (string signature in signatures)
             {
@@ -119,11 +119,9 @@ namespace FDSec
                 //Console.Error.WriteLineAsync("Pattern " + hexsign);
                 if (Regex.IsMatch(malwarehex, hexsign, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase))
                 {
-                    malwarehex = String.Empty;
                     return true;
                 }
             }
-            malwarehex = String.Empty;
             return false;
         }
 
@@ -215,7 +213,7 @@ namespace FDSec
                     return true;
                 }
             }
-            catch { }
+            catch {}
             return false;
         }
 
@@ -229,28 +227,23 @@ namespace FDSec
             numfiles++;
             Console.Error.WriteAsync("\rScanned " + numfiles.ToString() + " files");
             byte[] malwarebuffer = File.ReadAllBytes(singlefile);
+            malwarehex = BitConverter.ToString(malwarebuffer).Replace("-", String.Empty);
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
             if (!whitehashes.Contains(malwarehash))
             {
-                if (blackhashes.Contains(malwarehash) || await CheckSignature(malwarebuffer))
+                if (blackhashes.Contains(malwarehash) || await CheckSignature())
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
-                    malwarehash = String.Empty;
-                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
-                    return true;
-                }
-                else if(!await CheckMetadata(singlefile) && await CheckEntropy(malwarebuffer))
-                {
-                    Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
-                    malwarehash = String.Empty;
-                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     return true;
                 }
                 else if (await CheckFnc(singlefile))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
-                    malwarehash = String.Empty;
-                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
+                    return true;
+                }
+                else if (!await CheckMetadata(singlefile) && await CheckEntropy(malwarebuffer))
+                {
+                    Console.Error.WriteLineAsync("\r\nsuspicious file: " + singlefile);
                     return true;
                 }
                 else
@@ -262,8 +255,6 @@ namespace FDSec
             {
                 Console.Error.WriteLineAsync("\r\nGOOD File! " + singlefile);
             }
-            malwarehash = String.Empty;
-            Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
             return false;
         }
 
@@ -294,6 +285,8 @@ namespace FDSec
 
         private static async Task<bool> CheckFnc(string singlefile)
         {
+            uint codeinjection = 0, sysregpersistance = 0, dataexfiltration = 0, httpdataexfiltration = 0, filecryptography = 0, antidbg = 0, envdetection = 0, antisandbox = 0, infostealer = 0, worming = 0;
+
             if (File.Exists(radare2path))
             {
                 Process radare2 = new Process();
@@ -319,8 +312,7 @@ namespace FDSec
                     }).Start();
                 }
                 string[] functions = radare2.StandardOutput.ReadToEnd().Split();
-                uint matches = 0;
-                if(functions.Length == 0)
+                if (functions.Length == 0)
                 {
                     Console.Error.WriteLineAsync("functions not found");
                     return false;
@@ -329,13 +321,6 @@ namespace FDSec
                 {
                     foreach (string dangerousfnc in dangerousfncs)
                     {
-                        if (function.Contains(dangerousfnc))
-                        {
-                            matches++;
-                        }
-
-                        uint codeinjection = 0, sysregpersistance = 0, dataexfiltration = 0, httpdataexfiltration = 0, filecryptography = 0, antidbg = 0, envdetection = 0, antisandbox = 0, infostealer = 0, worming = 0;
-
                         if (function.Contains(dangerousfnc))
                         {
                             switch (dangerousfnc)
@@ -409,35 +394,106 @@ namespace FDSec
 
                             Array.Clear(functions, 0, functions.Length);
                             radare2.Dispose();
-                            if ((codeinjection + sysregpersistance + dataexfiltration + httpdataexfiltration + filecryptography + antidbg + envdetection + antisandbox + infostealer + worming) > 8)
-                            {
-                                codeinjection = 0;
-                                sysregpersistance = 0;
-                                dataexfiltration = 0;
-                                httpdataexfiltration = 0;
-                                filecryptography = 0;
-                                antidbg = 0;
-                                envdetection = 0;
-                                antisandbox = 0;
-                                infostealer = 0;
-                                worming = 0;
-                                return true;
-                            }
                         }
                     }
                 }
-                /*Array.Clear(functions, 0, functions.Length);
-                if (matches >= 8)
-                {
-                    matches = 0;
-                    return true;
-                }
-                Console.Error.WriteLineAsync(matches.ToString() + " functions found!");*/
             }
             else
             {
-                Console.Error.WriteLine("radare2 not found!");
-                //match dangerous functions from strings
+                Console.Error.WriteLine("radare2 not found!\r\nsearching functions from strings");
+
+                string testomalware = File.ReadAllText(singlefile);
+                foreach (string dangerousfnc in dangerousfncs)
+                {
+                    if (testomalware.Contains(dangerousfnc))
+                    {
+                        switch (dangerousfnc)
+                        {
+                            case "VirtualAlloc":
+                            case "VirtualProtect":
+                            //case "WriteFile":
+                            case "RtlMoveMemory":
+                            case "WriteProcessMemory":
+                                codeinjection++;
+                                break;
+
+                            case "RegOpenKeyEx":
+                            case "RegCreateKeyEx":
+                            case "RegSetValueEx":
+                                sysregpersistance++;
+                                break;
+
+                            case "socket":
+                            case "connect":
+                            case "send":
+                                dataexfiltration++;
+                                break;
+
+                            case "InternetOpen":
+                            case "InternetConnect":
+                            case "HttpOpenRequest":
+                            case "HttpSendRequest":
+                            case "InternetReadFile":
+                                httpdataexfiltration++;
+                                break;
+
+                            case "FindFirstFile":
+                            case "FindNextFile":
+                            case "CreateFile":
+                            case "ReadFile":
+                            case "CryptEncrypt":
+                            case "WriteFile":
+                                filecryptography++;
+                                break;
+
+                            case "IsDebuggerPresent":
+                            case "TerminateProcess":
+                                antidbg++;
+                                break;
+
+                            case "QueryPerformanceCounter":
+                            case "GetTickCount":
+                            case "Sleep":
+                                antisandbox++;
+                                break;
+
+                            case "GlobalMemoryStatusEx":
+                            case "GetDiskFreeSpaceEx":
+                                envdetection++;
+                                break;
+
+                            case "GetComputerName":
+                            case "GetLogicalDrives":
+                            case "GetTempPath":
+                            case "LookupAccountSid":
+                                infostealer++;
+                                break;
+
+                            case "WNetOpenEnum":
+                            case "WNetEnumResource":
+                            case "WNetAddConnection2":
+                                worming++;
+                                break;
+                        }
+                    }
+                }
+            }
+            ulong matches = (codeinjection + sysregpersistance + dataexfiltration + httpdataexfiltration + filecryptography + antidbg + envdetection + antisandbox + infostealer + worming);
+            if (matches > 8)
+            {
+                Console.Error.WriteLine(matches.ToString() + " API FOUND!");
+                codeinjection = 0;
+                sysregpersistance = 0;
+                dataexfiltration = 0;
+                httpdataexfiltration = 0;
+                filecryptography = 0;
+                antidbg = 0;
+                envdetection = 0;
+                antisandbox = 0;
+                infostealer = 0;
+                worming = 0;
+                matches = 0;
+                return true;
             }
             return false;
         }
@@ -548,6 +604,3 @@ namespace FDSec
     }
 
 }
-
-
-
