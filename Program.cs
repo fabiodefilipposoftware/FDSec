@@ -233,16 +233,25 @@ namespace FDSec
             {
                 if (blackhashes.Contains(malwarehash) || await CheckSignature())
                 {
+                    malwarehash = String.Empty;
+                    malwarehex = String.Empty;
+                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
                 else if (await CheckFnc(singlefile))
                 {
+                    malwarehash = String.Empty;
+                    malwarehex = String.Empty;
+                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
                 else if (!await CheckMetadata(singlefile) && await CheckEntropy(malwarebuffer))
                 {
+                    malwarehash = String.Empty;
+                    malwarehex = String.Empty;
+                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     Console.Error.WriteLineAsync("\r\nsuspicious file: " + singlefile);
                     return true;
                 }
@@ -255,6 +264,9 @@ namespace FDSec
             {
                 Console.Error.WriteLineAsync("\r\nGOOD File! " + singlefile);
             }
+            malwarehash = String.Empty;
+            malwarehex = String.Empty;
+            Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
             return false;
         }
 
@@ -602,5 +614,6 @@ namespace FDSec
             Array.Clear(signatures, 0, signatures.Length);
         }
     }
+
 
 }
