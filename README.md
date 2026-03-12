@@ -28,6 +28,9 @@ Read and check the code before compiling and running it in production (Virtual M
 
 I suggest Framework 4.7 or higher!
 
+
+## EXAMPLES OF USE:
+
 1. Scan processes in loop:
 ```
 C:\fdsec_folder> .\fdsec.exe
