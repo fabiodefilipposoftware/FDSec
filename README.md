@@ -9,7 +9,7 @@ I am trying to create an Antivirus too.
 ## ⚠️WARNING⚠️:
 
 Read and check the code before compiling and running it in production (Virtual Machine)!
-## How to use it:
+## INSTALLATION:
 
 1. Create a new project in Visual Studio;
 2. Paste the code inside Program.cs;
@@ -47,7 +47,7 @@ C:\fdsec_folder> .\fdsec.exe .\folder\
 ```
 
 
-## Features
+## FEATURES
 - scan processes in loop;
 - Arbitrary scan single file;
 - recursive scan folder;
@@ -55,7 +55,7 @@ C:\fdsec_folder> .\fdsec.exe .\folder\
 - automatic exclusion from legittimate software (by whitelist hashes);
 - (optional) radare2 scanner for dangerous functions;
 
-## Technologies
+## TECHNOLOGIES
 - blacklist and whitelist of sha256 hashes;
 - signatures;
 - blacklist of malicious ip;
