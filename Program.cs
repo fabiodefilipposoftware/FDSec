@@ -109,7 +109,7 @@ namespace FDSec
             return null;
         }
 
-        private static async Task<bool> CheckSignature(string[] signatures, byte[] malwarebuffer)
+        private static async Task<bool> CheckSignature(byte[] malwarebuffer)
         {
             string malwarehex = BitConverter.ToString(malwarebuffer).Replace("-", String.Empty);
             //Console.Error.WriteLineAsync("Malware hexdump\r\n" + malwarehex);
@@ -119,9 +119,11 @@ namespace FDSec
                 //Console.Error.WriteLineAsync("Pattern " + hexsign);
                 if (Regex.IsMatch(malwarehex, hexsign, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase))
                 {
+                    malwarehex = String.Empty;
                     return true;
                 }
             }
+            malwarehex = String.Empty;
             return false;
         }
 
@@ -230,19 +232,25 @@ namespace FDSec
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
             if (!whitehashes.Contains(malwarehash))
             {
-                if (blackhashes.Contains(malwarehash) || await CheckSignature(signatures, malwarebuffer))
+                if (blackhashes.Contains(malwarehash) || await CheckSignature(malwarebuffer))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
+                    malwarehash = String.Empty;
+                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     return true;
                 }
                 else if(!await CheckMetadata(singlefile) && await CheckEntropy(malwarebuffer))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
+                    malwarehash = String.Empty;
+                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     return true;
                 }
                 else if (await CheckFnc(singlefile))
                 {
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
+                    malwarehash = String.Empty;
+                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     return true;
                 }
                 else
@@ -254,6 +262,8 @@ namespace FDSec
             {
                 Console.Error.WriteLineAsync("\r\nGOOD File! " + singlefile);
             }
+            malwarehash = String.Empty;
+            Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
             return false;
         }
 
@@ -284,7 +294,6 @@ namespace FDSec
 
         private static async Task<bool> CheckFnc(string singlefile)
         {
-
             if (File.Exists(radare2path))
             {
                 Process radare2 = new Process();
@@ -428,6 +437,7 @@ namespace FDSec
             else
             {
                 Console.Error.WriteLine("radare2 not found!");
+                //match dangerous functions from strings
             }
             return false;
         }
@@ -538,5 +548,6 @@ namespace FDSec
     }
 
 }
+
 
 
