@@ -27,8 +27,6 @@ Read and check the code before compiling and running it in production (Virtual M
 
 
 I suggest Framework 4.7 or higher!
-
-
 ## EXAMPLES OF USE:
 
 1. Scan processes in loop:
@@ -47,7 +45,7 @@ C:\fdsec_folder> .\fdsec.exe .\folder\
 ```
 
 
-## FEATURES
+## FEATURES:
 - scan processes in loop;
 - Arbitrary scan single file;
 - recursive scan folder;
@@ -55,7 +53,7 @@ C:\fdsec_folder> .\fdsec.exe .\folder\
 - automatic exclusion from legittimate software (by whitelist hashes);
 - (optional) radare2 scanner for dangerous functions;
 
-## TECHNOLOGIES
+## TECHNOLOGIES:
 - blacklist and whitelist of sha256 hashes;
 - signatures;
 - blacklist of malicious ip;
