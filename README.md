@@ -51,7 +51,11 @@ C:\fdsec_folder> .\fdsec.exe .\folder\
 - recursive scan folder;
 - scan remote ip connections in loop;
 - automatic exclusion from legittimate software (by whitelist hashes);
-- (optional) radare2 scanner for dangerous functions;
+- scan dangerous functions;
+- (optional) radare2 scanner for a deep search of dangerous functions;
+
+## ⚠️WARNING OF RADARE2⚠️:
+Using radare2 may cause a slowdown in the dangerous functions search. I have implement a 5-seconds timed wait;
 
 ## TECHNOLOGIES:
 - blacklist and whitelist of sha256 hashes;
