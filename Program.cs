@@ -104,6 +104,7 @@ namespace FDSec
                 using (HttpClient hc = new HttpClient())
                 {
                     return (await hc.GetStringAsync("https://raw.githubusercontent.com/fabiodefilipposoftware/FDSec/refs/heads/main/Database/blackips.txt")).Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    //return (await hc.GetStringAsync("https://myip.ms/files/blacklist/general/latest_blacklist.txt")).Split(new[] { '\n', '\r', '#' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
             catch { }
@@ -155,12 +156,15 @@ namespace FDSec
             }
             catch { }
             finally { Marshal.FreeHGlobal(tcpTablePtr); }
-            foreach (string singleIp in connectedIps)
+            foreach (string singleIp.Trim(new[] { '\t', ' ' }) in connectedIps)
             {
-                if (blackips.Contains(singleIp))
+                if(!String.IsNullOrEmpty(singleIp))
                 {
-                    Console.Error.WriteLineAsync("\r\nMALWARE CONNECTED to " + singleIp + " ...");
-                    return true;
+                    if (blackips.Contains(singleIp))
+                    {
+                        Console.Error.WriteLineAsync("\r\nMALWARE CONNECTED to " + singleIp + " ...");
+                        return true;
+                    }
                 }
             }
             return false;
