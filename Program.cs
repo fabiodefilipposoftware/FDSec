@@ -38,7 +38,7 @@ namespace FDSec
         private static ulong numfiles = 0;
         private static string malwarehex = string.Empty;
         private static readonly string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
-        private static readonly string[] ransomwords = new string[] {"important files have been encrypted", "private key and decryption program"};
+        private static readonly string[] ransomwords = new string[] {"important files have been encrypted", "private key and decryption program", "backups and shadow copies also encrypted or removed"};
         private static readonly string[] dangerousfncs = new string[] {
             "RegCreateKeyEx", "RegDeleteKey", "RegEnumKeyEx", "RegOpenKeyEx", "RegSetValueEx",
             "VirtualAlloc", "VirtualFree", "VirtualProtect", "VirtualQuery", "CreateThread",
@@ -423,7 +423,7 @@ namespace FDSec
                 uint riskscore = 0;
                 foreach (string sransomwords in ransomwords)
                 {
-                    if (testomalware.Contains(sransomwords))
+                    if (testomalware.IndexOf(sransomwords, StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         riskscore++;
                     }
