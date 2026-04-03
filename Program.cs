@@ -43,6 +43,7 @@ namespace FDSec
             "your files have been encrypted",
             "private key and decryption program",
             "how I can recovery my files?",
+            "to RESTORE all of your files, please follow this simple steps",
             "your files, documents, photos, databases and other important files are encrypted",
             "backups and shadow copies also encrypted or removed",
             "all of your files are currently encrypted by",
