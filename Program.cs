@@ -170,8 +170,9 @@ namespace FDSec
             }
             catch { }
             finally { Marshal.FreeHGlobal(tcpTablePtr); }
-            foreach (string singleIp.Trim(new[] { '\t', ' ' }) in connectedIps)
+            foreach (string singleIpv in connectedIps)
             {
+                string singleIp = singleIpv.Trim(new[] { '\t', ' ' });
                 if(!String.IsNullOrEmpty(singleIp))
                 {
                     if (blackips.Contains(singleIp))
