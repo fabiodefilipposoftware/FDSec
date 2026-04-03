@@ -38,6 +38,7 @@ namespace FDSec
         private static ulong numfiles = 0;
         private static string malwarehex = string.Empty;
         private static readonly string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
+        private static readonly string[] ransomwords = new strig[] {"important files have been encrypted", "private key and decryption program"};
         private static readonly string[] dangerousfncs = new string[] {
             "RegCreateKeyEx", "RegDeleteKey", "RegEnumKeyEx", "RegOpenKeyEx", "RegSetValueEx",
             "VirtualAlloc", "VirtualFree", "VirtualProtect", "VirtualQuery", "CreateThread",
@@ -419,6 +420,20 @@ namespace FDSec
                 Console.Error.WriteLine("radare2 not found!\r\nsearching functions from strings");
 
                 string testomalware = File.ReadAllText(singlefile);
+                uint riskscore = 0;
+                foreach (string sransomwords in ransomwords)
+                {
+                    if (testomalware.Contains(sransomwords))
+                    {
+                        riskscore++;
+                    }
+                }
+
+                if (riskscore > 1)
+                {
+                    return true;
+                }
+                
                 foreach (string dangerousfnc in dangerousfncs)
                 {
                     if (testomalware.Contains(dangerousfnc))
