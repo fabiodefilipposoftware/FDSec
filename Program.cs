@@ -250,7 +250,7 @@ namespace FDSec
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
             if (!whitehashes.Contains(malwarehash))
             {
-                if (blackhashes.Contains(malwarehash) || await CheckSignature())
+                if (blackhashes.Contains(malwarehash))
                 {
                     malwarehash = String.Empty;
                     malwarehex = String.Empty;
@@ -272,6 +272,14 @@ namespace FDSec
                     malwarehex = String.Empty;
                     Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     Console.Error.WriteLineAsync("\r\nsuspicious file: " + singlefile);
+                    return true;
+                }
+                else if (await CheckSignature())
+                {
+                    malwarehash = String.Empty;
+                    malwarehex = String.Empty;
+                    Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
+                    Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
                 else
