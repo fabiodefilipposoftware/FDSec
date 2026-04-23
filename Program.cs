@@ -709,6 +709,4 @@ namespace FDSec
             Array.Clear(signatures, 0, signatures.Length);
         }
     }
-
-
 }
