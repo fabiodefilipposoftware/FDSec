@@ -601,6 +601,22 @@ namespace FDSec
                         {
                             if (proc.Id != Process.GetCurrentProcess().Id)
                             {
+                                if (!CheckServiceStatus("EventLog") && !CheckServiceStatus("VSS"))
+                                {
+                                    if (IsProcessElevated(theprocess))
+                                    {
+                                        Process.Start(new ProcessStartInfo
+                                        {
+                                            FileName = "taskkill",
+                                            Arguments = $"/F /T /PID {proc.Id}",
+                                            CreateNoWindow = true,
+                                            UseShellExecute = false
+                                        }).WaitForExit();
+                                        GetQuarantine(proc.MainModule.FileName);
+                                    }
+                                }
+                                else
+                                {
                                 try
                                 {
                                     if (!pid.Contains(proc.Id))
@@ -631,6 +647,7 @@ namespace FDSec
                                     }
                                 }
                                 catch { }
+                                }
                             }
                         }
                         for (int i = 0; i < pid.Count; i++)
