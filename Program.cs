@@ -72,6 +72,43 @@ namespace FDSec
             "WinHttpReceiveResponse", "WinHttpReadData", "WinHttpQueryHeaders", "WinHttpCrackUrl", "WinHttpCloseHandle",
             "WinHttpSetTimeouts", "GetFileAttributesEx", "GetComputerName", "GetLogicalDrives", "GlobalMemoryStatusEx",
             "GetDiskFreeSpaceEx", "GetTempPath", "GetTimeZoneInformation"};
+
+        private static bool CheckServiceStatus(string serviceName)
+        {
+            try
+            {         
+                if (new ServiceController(serviceName).Status == ServiceControllerStatus.Running)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Errore durante il controllo di {serviceName}: {ex.Message}");
+            }
+            return false;
+        }
+
+        private static bool isAdmin(Process process)
+        {
+             try
+             {
+            // Apriamo il token del processo per verificarne l'elevazione
+                IntPtr processHandle = process.Handle;
+                WindowsIdentity identity = new WindowsIdentity(processHandle);
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+
+
+            // Verifica se il SID corrisponde a quello degli amministratori
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch
+            {
+                 return false;
+            }
+        }
+
+        
         private static async Task<string[]> DatasetSignature()
         {
             try
@@ -603,7 +640,7 @@ namespace FDSec
                             {
                                 if (!CheckServiceStatus("EventLog") && !CheckServiceStatus("VSS"))
                                 {
-                                    if (IsProcessElevated(theprocess))
+                                    if (isAdmin(theprocess))
                                     {
                                         Process.Start(new ProcessStartInfo
                                         {
@@ -617,36 +654,36 @@ namespace FDSec
                                 }
                                 else
                                 {
-                                try
-                                {
-                                    if (!pid.Contains(proc.Id))
+                                    try
                                     {
-                                        Console.Error.WriteLine("Scanning PID " + proc.Id);
-                                        pid.Add(proc.Id);
-                                        byte[] malwarebuffer = File.ReadAllBytes(proc.MainModule.FileName);
-                                        if (malwarebuffer != null)
+                                        if (!pid.Contains(proc.Id))
                                         {
-                                            string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
-                                            if (!whitehashes.Contains(malwarehash))
+                                            Console.Error.WriteLine("Scanning PID " + proc.Id);
+                                            pid.Add(proc.Id);
+                                            byte[] malwarebuffer = File.ReadAllBytes(proc.MainModule.FileName);
+                                            if (malwarebuffer != null)
                                             {
-                                                if (await FileValutation(proc.MainModule.FileName) || await CheckIpsByPid(blackIps, proc.Id))
+                                                string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
+                                                if (!whitehashes.Contains(malwarehash))
                                                 {
-                                                    Process.Start(new ProcessStartInfo
+                                                    if (await FileValutation(proc.MainModule.FileName) || await CheckIpsByPid(blackIps, proc.Id))
                                                     {
-                                                        FileName = "taskkill",
-                                                        Arguments = $"/F /T /PID {proc.Id}",
-                                                        CreateNoWindow = true,
-                                                        UseShellExecute = false
-                                                    }).WaitForExit();
-                                                    GetQuarantine(proc.MainModule.FileName);
+                                                        Process.Start(new ProcessStartInfo
+                                                        {
+                                                            FileName = "taskkill",
+                                                            Arguments = $"/F /T /PID {proc.Id}",
+                                                            CreateNoWindow = true,
+                                                            UseShellExecute = false
+                                                        }).WaitForExit();
+                                                        GetQuarantine(proc.MainModule.FileName);
+                                                    }
                                                 }
+                                                malwarehash = String.Empty;
                                             }
-                                            malwarehash = String.Empty;
+                                            Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                                         }
-                                        Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                                     }
-                                }
-                                catch { }
+                                    catch { }
                                 }
                             }
                         }
