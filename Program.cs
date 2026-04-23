@@ -640,7 +640,7 @@ namespace FDSec
                             {
                                 if (!CheckServiceStatus("EventLog") && !CheckServiceStatus("VSS"))
                                 {
-                                    if (isAdmin(theprocess))
+                                    if (isAdmin(proc))
                                     {
                                         Process.Start(new ProcessStartInfo
                                         {
