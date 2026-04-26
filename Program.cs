@@ -35,9 +35,9 @@ namespace FDSec
         private static HashSet<string> whitehashes;
         private static HashSet<string> blackIps;
         private static string[] signatures;
-        private static readonly SHA256 sha = SHA256.Create();
+        
         private static ulong numfiles = 0;
-        private static string malwarehex = string.Empty;
+        
         private static readonly string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
         private static readonly string[] ransomwords = new string[] {
             "important files have been encrypted",
@@ -282,9 +282,10 @@ namespace FDSec
         private static bool FileValutation(string singlefile)
         {
             numfiles++;
+            SHA256 sha = SHA256.Create();
             Console.Error.WriteAsync("\rScanned " + numfiles.ToString() + " files");
             byte[] malwarebuffer = File.ReadAllBytes(singlefile);
-            malwarehex = BitConverter.ToString(malwarebuffer).Replace("-", String.Empty);
+            string malwarehex = BitConverter.ToString(malwarebuffer).Replace("-", String.Empty);
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
             if (!whitehashes.Contains(malwarehash))
             {
