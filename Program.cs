@@ -245,7 +245,7 @@ namespace FDSec
             return false;
         }
 
-        private static async Task<bool> CheckEntropy(byte[] malwarebuffer)
+        private static bool CheckEntropy(byte[] malwarebuffer)
         {
             try
             {
@@ -274,12 +274,12 @@ namespace FDSec
             return false;
         }
 
-        private static async Task GetQuarantine(string malwwarefilename)
+        private static void GetQuarantine(string malwwarefilename)
         {
             File.Move(malwwarefilename, malwwarefilename + ".malware");
         }
 
-        private static async Task<bool> FileValutation(string singlefile)
+        private static bool FileValutation(string singlefile)
         {
             numfiles++;
             Console.Error.WriteAsync("\rScanned " + numfiles.ToString() + " files");
