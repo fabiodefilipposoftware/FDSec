@@ -12,4 +12,8 @@ sha256 hashes resources:
 ## SIGNATURES
 You can add hexadecimal signatures with no \x nor blank/backspace, like this <strong>a1b2c3</strong> INSIDE round brackets, example (00a1b2c3d4e5f6);
 
+signatures resources:
+
+[bysiber/gpt-malware-analysis](https://github.com/bysiber/gpt-malware-analysis)
+
 You can write conditions, for example <strong>(a1b2c3 AND d4e5f6) OR (b1c2d3 AND e4f5a6)</strong>;
