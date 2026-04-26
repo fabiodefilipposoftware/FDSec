@@ -622,7 +622,7 @@ namespace FDSec
                             }
                             else if (File.Exists(argv))
                             {
-                                if (await FileValutation(argv))
+                                if (FileValutation(argv))
                                 {
                                     GetQuarantine(argv);
                                 }
@@ -674,7 +674,7 @@ namespace FDSec
                                                 string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
                                                 if (!whitehashes.Contains(malwarehash))
                                                 {
-                                                    if (await FileValutation(proc.MainModule.FileName) || await CheckIpsByPid(blackIps, proc.Id))
+                                                    if (FileValutation(proc.MainModule.FileName) || await CheckIpsByPid(blackIps, proc.Id))
                                                     {
                                                         Process.Start(new ProcessStartInfo
                                                         {
