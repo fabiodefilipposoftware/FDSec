@@ -339,13 +339,20 @@ namespace FDSec
         {
             try
             {
-                foreach (string singlefile in Directory.GetFiles(singledirecotry))
+                Parallel.ForEach(Directory.GetFiles(singledirecotry), new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, singlefile =>
                 {
-                    if (await FileValutation(singlefile))
+                  try
+                  {
+                    if (FileValutation(singlefile))
                     {
-                        GetQuarantine(singlefile);
+                      GetQuarantine(singlefile);
                     }
-                }
+                   }
+                   catch (Exception ex)
+                   {
+                     Console.Error.WriteLine($"Errore su {singlefile}: {ex.Message}");
+                   }
+                });
 
                 foreach (string singledirectory in Directory.GetDirectories(singledirecotry))
                 {
