@@ -182,7 +182,7 @@ namespace FDSec
 
         private static bool CheckSignature(string malwarehex)
         {
-            //Console.Error.WriteLineAsync("Malware hexdump\r\n" + malwarehex);
+            Console.Error.WriteLineAsync("Checking for signatures...");
             foreach (string signature in signatures)
             {
                 string hexsign = "^(?:" + signature.Replace("(", "(?=.*").Replace(" AND ", ")(?=.*").Replace(" OR ", "|") + ").*$";
@@ -300,7 +300,7 @@ namespace FDSec
         {
             numfiles++;
             SHA256 sha = SHA256.Create();
-            Console.Error.WriteAsync("\rScanned " + numfiles.ToString() + " files");
+            Console.Error.WriteLineAsync("Scanned " + numfiles.ToString() + " files");
             byte[] malwarebuffer = File.ReadAllBytes(singlefile);
             string malwarehex = BitConverter.ToString(malwarebuffer).Replace("-", String.Empty);
             string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
