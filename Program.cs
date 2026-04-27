@@ -75,7 +75,7 @@ namespace FDSec
             "WinHttpSetTimeouts", "GetFileAttributesEx", "GetComputerName", "GetLogicalDrives", "GlobalMemoryStatusEx",
             "GetDiskFreeSpaceEx", "GetTempPath", "GetTimeZoneInformation"};
 
-        DllImport("advapi32.dll", SetLastError = true)]
+        [DllImport("advapi32.dll", SetLastError = true)]
         private static extern bool OpenProcessToken(IntPtr ProcessHandle, uint DesiredAccess, out IntPtr TokenHandle);
 
         [DllImport("kernel32.dll", SetLastError = true)]
