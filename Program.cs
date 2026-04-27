@@ -75,6 +75,14 @@ namespace FDSec
             "WinHttpSetTimeouts", "GetFileAttributesEx", "GetComputerName", "GetLogicalDrives", "GlobalMemoryStatusEx",
             "GetDiskFreeSpaceEx", "GetTempPath", "GetTimeZoneInformation"};
 
+        DllImport("advapi32.dll", SetLastError = true)]
+        private static extern bool OpenProcessToken(IntPtr ProcessHandle, uint DesiredAccess, out IntPtr TokenHandle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr hObject);
+
+        private const uint TOKEN_QUERY = 0x0008;
+                
         private static bool CheckServiceStatus(string serviceName)
         {
             try
@@ -93,20 +101,31 @@ namespace FDSec
 
         private static bool isAdmin(Process process)
         {
+            IntPtr tokenHandle = IntPtr.Zero;
             try
             {
-                IntPtr processHandle = process.Handle;
-                WindowsIdentity identity = new WindowsIdentity(processHandle);
-                WindowsPrincipal principal = new WindowsPrincipal(identity);
-
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+               if (OpenProcessToken(process.Handle, TOKEN_QUERY, out tokenHandle))
+               {
+                   using (WindowsIdentity identity = new WindowsIdentity(tokenHandle))
+                   {
+                       WindowsPrincipal principal = new WindowsPrincipal(identity);
+                       return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                   }
+               }
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                 Console.Error.WriteLineAsync(ex.Message);
             }
+            finally
+            {
+                if (tokenHandle != IntPtr.Zero)
+                {
+                   CloseHandle(tokenHandle);
+                }
+            }
+            return false;
         }
-
 
         private static async Task<string[]> DatasetSignature()
         {
