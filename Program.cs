@@ -347,6 +347,7 @@ namespace FDSec
             {
                 Console.Error.WriteLineAsync("\r\nGOOD File! " + singlefile);
             }
+            sha.Dispose();
             malwarehash = String.Empty;
             malwarehex = String.Empty;
             Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
@@ -730,6 +731,7 @@ namespace FDSec
                     }
                 }
             }
+            sha.Dispose();
             blackhashes.Clear();
             whitehashes.Clear();
             blackIps.Clear();
