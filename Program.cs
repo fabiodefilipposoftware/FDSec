@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ServiceProcess;
+using System.Security.Principal;
 
 namespace FDSec
 {
@@ -35,9 +36,9 @@ namespace FDSec
         private static HashSet<string> whitehashes;
         private static HashSet<string> blackIps;
         private static string[] signatures;
-        
+
         private static ulong numfiles = 0;
-        
+
         private static readonly string radare2path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "radare2.exe");
         private static readonly string[] ransomwords = new string[] {
             "important files have been encrypted",
@@ -77,7 +78,7 @@ namespace FDSec
         private static bool CheckServiceStatus(string serviceName)
         {
             try
-            {         
+            {
                 if (new ServiceController(serviceName).Status == ServiceControllerStatus.Running)
                 {
                     return true;
@@ -92,24 +93,24 @@ namespace FDSec
 
         private static bool isAdmin(Process process)
         {
-             try
-             {
-            // Apriamo il token del processo per verificarne l'elevazione
+            try
+            {
+                // Apriamo il token del processo per verificarne l'elevazione
                 IntPtr processHandle = process.Handle;
                 WindowsIdentity identity = new WindowsIdentity(processHandle);
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
 
 
-            // Verifica se il SID corrisponde a quello degli amministratori
+                // Verifica se il SID corrisponde a quello degli amministratori
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
             catch
             {
-                 return false;
+                return false;
             }
         }
 
-        
+
         private static async Task<string[]> DatasetSignature()
         {
             try
@@ -163,7 +164,7 @@ namespace FDSec
             return null;
         }
 
-        private static async Task<bool> CheckSignature()
+        private static bool CheckSignature(string malwarehex)
         {
             //Console.Error.WriteLineAsync("Malware hexdump\r\n" + malwarehex);
             foreach (string signature in signatures)
@@ -178,7 +179,7 @@ namespace FDSec
             return false;
         }
 
-        private static async Task<bool> CheckIpsByPid(HashSet<string> blackips, int pid)
+        private static bool CheckIpsByPid(HashSet<string> blackips, int pid)
         {
             HashSet<string> connectedIps = new HashSet<string>();
             int bufferSize = 0;
@@ -211,7 +212,7 @@ namespace FDSec
             foreach (string singleIpv in connectedIps)
             {
                 string singleIp = singleIpv.Trim(new[] { '\t', ' ' });
-                if(!String.IsNullOrEmpty(singleIp))
+                if (!String.IsNullOrEmpty(singleIp))
                 {
                     if (blackips.Contains(singleIp))
                     {
@@ -223,7 +224,7 @@ namespace FDSec
             return false;
         }
 
-        private static async Task<bool> CheckMetadata(string malwarefilename)
+        private static bool CheckMetadata(string malwarefilename)
         {
             try
             {
@@ -270,7 +271,7 @@ namespace FDSec
                     return true;
                 }
             }
-            catch {}
+            catch { }
             return false;
         }
 
@@ -297,7 +298,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if (await CheckFnc(singlefile))
+                else if ( CheckFnc(singlefile))
                 {
                     malwarehash = String.Empty;
                     malwarehex = String.Empty;
@@ -305,7 +306,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if (!await CheckMetadata(singlefile) && await CheckEntropy(malwarebuffer))
+                else if (! CheckMetadata(singlefile) &&  CheckEntropy(malwarebuffer))
                 {
                     malwarehash = String.Empty;
                     malwarehex = String.Empty;
@@ -313,7 +314,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nsuspicious file: " + singlefile);
                     return true;
                 }
-                else if (await CheckSignature())
+                else if ( CheckSignature(malwarehex))
                 {
                     malwarehash = String.Empty;
                     malwarehex = String.Empty;
@@ -342,17 +343,17 @@ namespace FDSec
             {
                 Parallel.ForEach(Directory.GetFiles(singledirecotry), new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, singlefile =>
                 {
-                  try
-                  {
-                    if (FileValutation(singlefile))
+                    try
                     {
-                      GetQuarantine(singlefile);
+                        if (FileValutation(singlefile))
+                        {
+                            GetQuarantine(singlefile);
+                        }
                     }
-                   }
-                   catch (Exception ex)
-                   {
-                     Console.Error.WriteLine($"Errore su {singlefile}: {ex.Message}");
-                   }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Errore su {singlefile}: {ex.Message}");
+                    }
                 });
 
                 foreach (string singledirectory in Directory.GetDirectories(singledirecotry))
@@ -368,7 +369,7 @@ namespace FDSec
             return new string(input.Where(c => c >= 32 && c <= 127).ToArray());
         }
 
-        private static async Task<bool> CheckFnc(string singlefile)
+        private static bool CheckFnc(string singlefile)
         {
             uint codeinjection = 0, sysregpersistance = 0, dataexfiltration = 0, httpdataexfiltration = 0, filecryptography = 0, antidbg = 0, envdetection = 0, antisandbox = 0, infostealer = 0, worming = 0;
 
@@ -501,7 +502,7 @@ namespace FDSec
                 {
                     return true;
                 }
-                
+
                 foreach (string dangerousfnc in dangerousfncs)
                 {
                     if (testomalware.Contains(dangerousfnc))
@@ -640,6 +641,7 @@ namespace FDSec
                 else
                 {
                     List<int> pid = new List<int>();
+                    SHA256 sha = SHA256.Create();
                     while (true)
                     {
                         // Scanning processes
@@ -675,7 +677,7 @@ namespace FDSec
                                                 string malwarehash = BitConverter.ToString(sha.ComputeHash(malwarebuffer)).Replace("-", String.Empty);
                                                 if (!whitehashes.Contains(malwarehash))
                                                 {
-                                                    if (FileValutation(proc.MainModule.FileName) || await CheckIpsByPid(blackIps, proc.Id))
+                                                    if (FileValutation(proc.MainModule.FileName) || CheckIpsByPid(blackIps, proc.Id))
                                                     {
                                                         Process.Start(new ProcessStartInfo
                                                         {
