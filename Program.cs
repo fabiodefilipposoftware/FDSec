@@ -95,13 +95,10 @@ namespace FDSec
         {
             try
             {
-                // Apriamo il token del processo per verificarne l'elevazione
                 IntPtr processHandle = process.Handle;
                 WindowsIdentity identity = new WindowsIdentity(processHandle);
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
 
-
-                // Verifica se il SID corrisponde a quello degli amministratori
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
             catch
