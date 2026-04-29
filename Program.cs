@@ -737,7 +737,7 @@ namespace FDSec
                                 return true;
                             }
                         });
-                        Thread.Sleep(150);
+                        await Task.Delay(150);
                     }
                 }
             }
