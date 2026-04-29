@@ -314,7 +314,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if ( CheckFnc(singlefile))
+                else if (CheckFnc(singlefile))
                 {
                     malwarehash = String.Empty;
                     malwarehex = String.Empty;
@@ -322,7 +322,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nMALWARE FOUND! " + singlefile);
                     return true;
                 }
-                else if (! CheckMetadata(singlefile) &&  CheckEntropy(malwarebuffer))
+                else if (!CheckMetadata(singlefile) &&  CheckEntropy(malwarebuffer))
                 {
                     malwarehash = String.Empty;
                     malwarehex = String.Empty;
@@ -330,7 +330,7 @@ namespace FDSec
                     Console.Error.WriteLineAsync("\r\nsuspicious file: " + singlefile);
                     return true;
                 }
-                else if ( CheckSignature(malwarehex))
+                else if (CheckSignature(malwarehex))
                 {
                     malwarehash = String.Empty;
                     malwarehex = String.Empty;
@@ -637,7 +637,7 @@ namespace FDSec
                             string argv = Sanitize(args[0]);
                             if (Directory.Exists(argv) && !File.Exists(argv))
                             {
-                                ScanningDirectory(argv);
+                                await ScanningDirectory(argv);
                             }
                             else if (File.Exists(argv))
                             {
