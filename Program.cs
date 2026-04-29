@@ -715,7 +715,7 @@ namespace FDSec
                                 }
                             }
                         }
-                        for (int i = 0; i < pid.Count; i++)
+                        /*for (int i = 0; i < pid.Count; i++)
                         {
                             try
                             {
@@ -726,7 +726,17 @@ namespace FDSec
                             }
                             catch
                             { }
-                        }
+                        }*/
+                        pid.RemoveAll(id => {
+                            try
+                            {
+                                return Process.GetProcessById(id).HasExited;
+                            }
+                            catch
+                            {
+                                return true;
+                            }
+                        });
                         Thread.Sleep(150);
                     }
                 }
