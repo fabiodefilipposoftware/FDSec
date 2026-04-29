@@ -298,7 +298,7 @@ namespace FDSec
 
         private static bool FileValutation(string singlefile)
         {
-            numfiles++;
+            Interlocked.Increment(ref numfiles);
             SHA256 sha = SHA256.Create();
             Console.Error.WriteLineAsync("Scanned " + numfiles.ToString() + " files");
             byte[] malwarebuffer = File.ReadAllBytes(singlefile);
