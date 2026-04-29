@@ -358,7 +358,7 @@ namespace FDSec
         {
             try
             {
-                Parallel.ForEach(Directory.GetFiles(singledirecotry), new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, singlefile =>
+                Parallel.ForEachAsync(Directory.GetFiles(singledirecotry), new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (singlefile, token) =>
                 {
                     try
                     {
@@ -373,9 +373,9 @@ namespace FDSec
                     }
                 });
 
-                foreach (string singledirectory in Directory.GetDirectories(singledirecotry))
+                foreach (string subdirectory in Directory.GetDirectories(singledirecotry))
                 {
-                    await ScanningDirectory(singledirectory);
+                    await ScanningDirectory(subdirectory);
                 }
             }
             catch { }
