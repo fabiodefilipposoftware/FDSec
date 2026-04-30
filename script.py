@@ -3,7 +3,7 @@ import json
 
 def main():
     string_to_search = os.getenv('key1')
-    file_database = "lista_eseguibili.txt"
+    file_database = "Database/malwaresignatures.txt"
     
     if not stringa_da_cercare:
         # print("ERROR: no string riceived...")
