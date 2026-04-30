@@ -26,5 +26,5 @@ jobs:
       - name: Esegui lo script di ricerca
         env:
           # Prende "chiave1" dal JSON inviato via HTTP e la mette in una variabile d'ambiente
-          key1: ${{ github.event.client_payload.chiave1 }}
+          key1: ${{ github.event.client_payload.key1 }}
         run: python script.py
