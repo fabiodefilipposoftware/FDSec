@@ -2,7 +2,7 @@ import os
 import json
 
 def main():
-    string_to_search = os.getenv('key1')
+    string_to_search = os.getenv('keyval')
     file_database = "Database/malwaresignatures.txt"
     database_set = set()
     
