@@ -1,0 +1,30 @@
+name: Ricerca Stringa Cloud
+# Il trigger repository_dispatch permette l'attivazione tramite chiamata API HTTP POST
+on:
+  repository_dispatch:
+    types: [avvia_ricerca]
+
+jobs:
+  esecuzione_script:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Copia i file dal repository (script.py e database.txt) nella macchina virtuale
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+
+      # 2. Configura l'ambiente Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 3. Installa la libreria requests (necessaria per inviare il risultato all'esterno)
+      - name: Installa dipendenze
+        run: pip install requests
+
+      # 4. Esegue lo script Python passando il dato ricevuto via API
+      - name: Esegui lo script di ricerca
+        env:
+          # Prende "chiave1" dal JSON inviato via HTTP e la mette in una variabile d'ambiente
+          key1: ${{ github.event.client_payload.chiave1 }}
+        run: python script.py
