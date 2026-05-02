@@ -6,6 +6,12 @@
 
 I am trying to create an Antivirus too.
 
+## WHAT IS MINI-FDSEC?
+
+It's a mini version of FDSec, with the only blackhashes engine. starting it, it will scan %USERPROFILE% folder recursively, in loop, checking all files only for blackhashes. There are two versions, english and italian one.
+Please report bugs in Issues tab.
+
+
 ## ⚠️WARNING⚠️:
 
 Read and check the code before compiling and running it in production (Virtual Machine)!
