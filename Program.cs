@@ -328,7 +328,7 @@ namespace FDSec
                     malwarehex = String.Empty;
                     Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     Console.Error.WriteLineAsync("\r\nsuspicious file: " + singlefile);
-                    Console.Error.Write("Do you want block " + singlefile + " connection with firewall?");
+                    Console.Error.Write("Do you want block " + singlefile + " connection with firewall? (Y/n)");
                     if(Console.ReadLine().Equals("Y"))
                     {
                         Process.Start(new ProcessStartInfo
