@@ -328,6 +328,17 @@ namespace FDSec
                     malwarehex = String.Empty;
                     Array.Clear(malwarebuffer, 0, malwarebuffer.Length);
                     Console.Error.WriteLineAsync("\r\nsuspicious file: " + singlefile);
+                    Console.Error.Write("Do you want block " + singlefile + " connection with firewall?");
+                    if(Console.ReadLine().Equals("Y"))
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "netsh",
+                            Arguments = $"advfirewall firewall add rule name=\"Block {singlefile} netconns\" program=\"{singlefile}\" protocol=tcp dir=out enable=yes action=block profile=any",
+                            CreateNoWindow = true,
+                            UseShellExecute = false
+                        }).WaitForExit();
+                    }
                     return true;
                 }
                 else if (CheckSignature(malwarehex))
