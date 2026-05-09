@@ -7,7 +7,7 @@ def main():
     database_set = set()
     
     if not string_to_search:
-        return false
+        return False
     
     if os.path.exists(file_database):
         with open(file_path, 'r', encoding='utf-8') as f:
