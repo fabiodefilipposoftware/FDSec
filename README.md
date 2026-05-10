@@ -68,3 +68,6 @@ Using radare2 may cause a slowdown in the dangerous functions search. I have imp
 - signatures;
 - blacklist of malicious ip;
 - dangerous functions;
+
+## HARDENING:
+super-hardening.bat is the union of some hardening scripts. <strong>Check the script</strong> before running as administrator.
